@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: usar-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: usar_monitoreo
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - usar-network
+
+  # Spring Boot Application
+  app:
+    build: .
+    container_name: usar-app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/usar_monitoreo
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - usar-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  usar-network:
+    driver: bridge

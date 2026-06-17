@@ -1,0 +1,177 @@
+/* Estilos personalizados para el sistema USAR COL-13 */
+
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #ffffff;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse-green {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+    }
+}
+
+header {
+    animation: slideDown 0.5s ease-out;
+}
+
+.bg-gradient-to-r {
+    background-image: linear-gradient(to right, var(--tw-gradient-stops));
+}
+
+/* Tarjetas con efecto hover */
+.border-l-4 {
+    border-left-width: 4px;
+}
+
+.border-l-4:hover {
+    box-shadow: -4px 8px 16px rgba(34, 197, 94, 0.1);
+}
+
+/* Inputs con estilo verde */
+input[type="text"],
+input[type="email"],
+select {
+    transition: all 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+select:focus {
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+/* Botones con animación */
+button {
+    transition: all 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(34, 197, 94, 0.2);
+}
+
+button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Modales */
+.hidden {
+    display: none;
+}
+
+#modalConfirmacion,
+#modalExito,
+#modalError {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Barra de progreso */
+#barraProgreso {
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+}
+
+/* Respuestas de opciones */
+.grid > label {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Scroll suave */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #22c55e;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #16a34a;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 1.75rem;
+    }
+
+    .grid-cols-5 {
+        grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    }
+
+    #modalConfirmacion > div,
+    #modalExito > div,
+    #modalError > div {
+        margin: 20px;
+    }
+}
+
+/* Focus visible para accesibilidad */
+input:focus-visible,
+button:focus-visible,
+select:focus-visible {
+    outline: 2px solid #16a34a;
+    outline-offset: 2px;
+}
+
+/* Efecto de ring para indicadores de selección */
+.ring-4 {
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.5), inset 0 0 0 1px #16a34a;
+}
+
+/* Transiciones suaves */
+* {
+    transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Prevenir transiciones en carga inicial */
+body.preload * {
+    transition: none !important;
+}

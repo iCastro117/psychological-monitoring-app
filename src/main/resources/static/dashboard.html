@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Monitoreo Psicológico USAR COL-13</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-green-900 to-green-800 text-white py-6 shadow-lg">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-4xl font-bold">📊 Dashboard USAR COL-13</h1>
+                        <p class="text-green-100 mt-1">Panel de Monitoreo Psicológico</p>
+                    </div>
+                    <div>
+                        <a href="/" class="px-6 py-2 bg-white text-green-700 rounded-lg hover:bg-gray-100 font-semibold transition">
+                            ← Nueva Encuesta
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-8">
+            <!-- Filtros -->
+            <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">Filtros</h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Búsqueda</label>
+                        <input type="text" id="busqueda" placeholder="Nombre o código..."
+                            class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-700">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nivel de Riesgo</label>
+                        <select id="filtroRiesgo"
+                            class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-700">
+                            <option value="">Todos</option>
+                            <option value="1">Mínimo</option>
+                            <option value="2">Bajo</option>
+                            <option value="3">Medio</option>
+                            <option value="4">Alto</option>
+                            <option value="5">Crítico</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Ordenar por</label>
+                        <select id="ordenar"
+                            class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-700">
+                            <option value="fecha-desc">Más reciente</option>
+                            <option value="fecha-asc">Más antiguo</option>
+                            <option value="riesgo-desc">Mayor riesgo</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button id="btnRefrescar" class="w-full px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 font-semibold transition">
+                            🔄 Refrescar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas -->
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+                <div class="bg-green-50 border-l-4 border-green-700 p-4 rounded">
+                    <div class="text-3xl font-bold text-green-700" id="totalEncuestas">0</div>
+                    <div class="text-sm text-gray-600">Encuestas Totales</div>
+                </div>
+                <div class="bg-red-50 border-l-4 border-red-700 p-4 rounded">
+                    <div class="text-3xl font-bold text-red-700" id="criticos">0</div>
+                    <div class="text-sm text-gray-600">Críticos (Riesgo 5)</div>
+                </div>
+                <div class="bg-orange-50 border-l-4 border-orange-700 p-4 rounded">
+                    <div class="text-3xl font-bold text-orange-700" id="altos">0</div>
+                    <div class="text-sm text-gray-600">Altos (Riesgo 4)</div>
+                </div>
+                <div class="bg-yellow-50 border-l-4 border-yellow-700 p-4 rounded">
+                    <div class="text-3xl font-bold text-yellow-700" id="medios">0</div>
+                    <div class="text-sm text-gray-600">Medios (Riesgo 3)</div>
+                </div>
+                <div class="bg-blue-50 border-l-4 border-blue-700 p-4 rounded">
+                    <div class="text-3xl font-bold text-blue-700" id="bajos">0</div>
+                    <div class="text-sm text-gray-600">Bajos (Riesgo 2)</div>
+                </div>
+            </div>
+
+            <!-- Tabla de Encuestas -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                    <h2 class="text-lg font-bold text-gray-800">Registro de Encuestas</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-100 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-sm font-bold text-gray-700">Semáforo</th>
+                                <th class="px-6 py-3 text-left text-sm font-bold text-gray-700">Nombre/Código</th>
+                                <th class="px-6 py-3 text-left text-sm font-bold text-gray-700">Rango</th>
+                                <th class="px-6 py-3 text-left text-sm font-bold text-gray-700">Unidad</th>
+                                <th class="px-6 py-3 text-left text-sm font-bold text-gray-700">Fecha</th>
+                                <th class="px-6 py-3 text-left text-sm font-bold text-gray-700">Riesgo</th>
+                                <th class="px-6 py-3 text-left text-sm font-bold text-gray-700">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaEncuestas" class="divide-y divide-gray-200">
+                            <tr class="text-center py-8">
+                                <td colspan="7" class="px-6 py-8 text-gray-500">Cargando encuestas...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-900 text-gray-400 py-4 text-center text-sm mt-8">
+            <p>© 2026 Sistema de Monitoreo Psicológico USAR COL-13 | Confidencial</p>
+        </footer>
+    </div>
+
+    <!-- Modal de Detalles -->
+    <div id="modalDetalles" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-2xl max-h-96 overflow-y-auto shadow-2xl">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Detalle de Respuestas</h3>
+            <div id="detallesContenido" class="space-y-2 text-sm"></div>
+            <button id="btnCerrarDetalles" class="mt-6 px-6 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 font-semibold">
+                Cerrar
+            </button>
+        </div>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>

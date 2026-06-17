@@ -1,0 +1,21 @@
+# Render.yaml - Configuración automática para Render
+services:
+  - type: web
+    name: psychological-monitoring-app
+    env: java
+    buildCommand: mvn clean install
+    startCommand: java -Dserver.port=$PORT -jar target/monitoreo-psicologico-1.0.0.jar
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        scope: runtime
+      - key: SPRING_DATASOURCE_USERNAME
+        scope: runtime
+      - key: SPRING_DATASOURCE_PASSWORD
+        scope: runtime
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: update
+
+databases:
+  - name: psycological-monitoring-db
+    engine: postgres
+    plan: free
