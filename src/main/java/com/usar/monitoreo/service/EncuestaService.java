@@ -12,42 +12,46 @@ import java.util.Optional;
 
 @Service
 public class EncuestaService {
+
     @Autowired
     private EncuestaRepository encuestaRepository;
-    
+
     @Autowired
     private RescatistaRepository rescatistaRepository;
 
     public Encuesta guardarEncuesta(Rescatista rescatista, int[] respuestas) {
         Encuesta encuesta = new Encuesta();
         encuesta.setRescatista(rescatista);
-        
+
         for (int i = 0; i < respuestas.length; i++) {
             encuesta.setRespuesta(i + 1, respuestas[i]);
         }
-        
+
         encuesta.setNivelRiesgo(calcularNivelRiesgo(respuestas));
         return encuestaRepository.save(encuesta);
     }
 
+    /**
+     * Calcula el nivel de riesgo psicológico basado en las respuestas.
+     * Preguntas críticas: 1 (agotamiento), 2 (pensamientos recurrentes),
+     * 3 (dificultades para dormir), 8 (impacto emocional), 13 (irritabilidad)
+     * Retorna: 1=Mínimo, 2=Bajo, 3=Medio, 4=Alto, 5=Crítico
+     */
     public int calcularNivelRiesgo(int[] respuestas) {
-        // Preguntas críticas: 1 (agotamiento), 2 (pensamientos recurrentes), 
-        // 3 (dificultades para dormir), 8 (impacto emocional), 13 (irritabilidad)
-        int[] preguntasCriticas = {0, 1, 2, 7, 12}; // índices: 1, 2, 3, 8, 13
+        int[] preguntasCriticas = {0, 1, 2, 7, 12}; // índices 0-based: P1, P2, P3, P8, P13
         int suma = 0;
-        
+
         for (int idx : preguntasCriticas) {
             if (idx < respuestas.length) {
                 suma += respuestas[idx];
             }
         }
-        
-        // Escala de riesgo
+
         if (suma >= 20) return 5; // Crítico
         if (suma >= 16) return 4; // Alto
         if (suma >= 12) return 3; // Medio
-        if (suma >= 8) return 2;  // Bajo
-        return 1; // Mínimo
+        if (suma >= 8)  return 2; // Bajo
+        return 1;                 // Mínimo
     }
 
     public List<Encuesta> obtenerTodasLasEncuestas() {
@@ -62,19 +66,22 @@ public class EncuestaService {
         return encuestaRepository.findByRescatistaId(rescatistaId);
     }
 
-    public Optional<Rescatista> obtenerOCrearRescatista(String nombreCodigo, String rango, String unidad) {
-        Optional<Rescatista> existente = rescatistaRepository.findByNombreCodigo(nombreCodigo);
+    /**
+     * Busca rescatista por cédula. Si no existe, lo crea.
+     * La cédula es el identificador único del personal.
+     */
+    public Optional<Rescatista> obtenerOCrearRescatista(String nombreCompleto, String cedula) {
+        Optional<Rescatista> existente = rescatistaRepository.findByCedula(cedula);
         if (existente.isPresent()) {
             return existente;
-        } else {
-            Rescatista nuevo = new Rescatista(nombreCodigo, rango, unidad);
-            return Optional.of(rescatistaRepository.save(nuevo));
         }
+        Rescatista nuevo = new Rescatista(nombreCompleto, cedula);
+        return Optional.of(rescatistaRepository.save(nuevo));
     }
 
     public String obtenerColorRiesgo(Integer nivel) {
         if (nivel == null) return "gray";
-        switch(nivel) {
+        switch (nivel) {
             case 5: return "red";
             case 4: return "orange";
             case 3: return "yellow";
@@ -85,7 +92,7 @@ public class EncuestaService {
 
     public String obtenerEtiquetaRiesgo(Integer nivel) {
         if (nivel == null) return "Desconocido";
-        switch(nivel) {
+        switch (nivel) {
             case 5: return "CRÍTICO";
             case 4: return "ALTO";
             case 3: return "MEDIO";

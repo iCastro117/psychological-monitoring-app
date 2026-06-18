@@ -2,11 +2,12 @@ package com.usar.monitoreo.controller;
 
 import com.usar.monitoreo.entity.Encuesta;
 import com.usar.monitoreo.entity.Rescatista;
+import com.usar.monitoreo.repository.EncuestaRepository;
+import com.usar.monitoreo.repository.RescatistaRepository;
 import com.usar.monitoreo.service.EncuestaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -17,73 +18,140 @@ import java.util.Optional;
 @Controller
 @RequestMapping("/")
 public class WebController {
-    @Autowired
-    private EncuestaService encuestaService;
+
+    @Autowired private EncuestaService encuestaService;
+    @Autowired private EncuestaRepository encuestaRepository;
+    @Autowired private RescatistaRepository rescatistaRepository;
+
+    // ─── Páginas HTML ──────────────────────────────────────────────────────────
 
     @GetMapping
-    public String index() {
-        return "forward:/index.html";
-    }
+    public String index() { return "forward:/index.html"; }
 
+    @GetMapping("/dashboard")
+    public String dashboard() { return "forward:/dashboard.html"; }
+
+    /** Panel 3: perfil individual del rescatista */
+    @GetMapping("/perfil")
+    public String perfil() { return "forward:/perfil.html"; }
+
+    // ─── API REST ──────────────────────────────────────────────────────────────
+
+    /** Recibe y guarda una encuesta */
     @PostMapping("/api/enviar-encuesta")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> enviarEncuesta(@RequestBody Map<String, Object> datos) {
         try {
-            String nombreCodigo = (String) datos.get("nombreCodigo");
-            String rango = (String) datos.get("rango");
-            String unidad = (String) datos.get("unidad");
-            
+            String nombreCompleto = (String) datos.get("nombreCompleto");
+            String cedula         = (String) datos.get("cedula");
+
             @SuppressWarnings("unchecked")
-            java.util.List<Integer> respuestasLista = (java.util.List<Integer>) datos.get("respuestas");
-            
-            int[] respuestas = new int[respuestasLista.size()];
-            for (int i = 0; i < respuestasLista.size(); i++) {
-                respuestas[i] = respuestasLista.get(i);
+            List<Integer> respuestasLista = (List<Integer>) datos.get("respuestas");
+
+            if (nombreCompleto == null || nombreCompleto.isBlank())
+                return errorResponse("El nombre completo es obligatorio.");
+            if (cedula == null || cedula.isBlank())
+                return errorResponse("La cédula es obligatoria.");
+            if (respuestasLista == null || respuestasLista.size() != 23)
+                return errorResponse("Debe responder las 23 preguntas.");
+
+            int[] respuestas = new int[23];
+            for (int i = 0; i < 23; i++) {
+                respuestas[i] = respuestasLista.get(i) != null ? respuestasLista.get(i) : 0;
             }
 
-            Optional<Rescatista> rescatista = encuestaService.obtenerOCrearRescatista(nombreCodigo, rango, unidad);
-            
+            Optional<Rescatista> rescatista =
+                    encuestaService.obtenerOCrearRescatista(nombreCompleto, cedula);
+
             if (rescatista.isPresent()) {
                 Encuesta encuesta = encuestaService.guardarEncuesta(rescatista.get(), respuestas);
-                
                 Map<String, Object> response = new HashMap<>();
                 response.put("success", true);
                 response.put("mensaje", "Encuesta guardada exitosamente");
                 response.put("idEncuesta", encuesta.getIdEncuesta());
-                response.put("nivelRiesgo", encuesta.getNivelRiesgo());
-                response.put("etiquetaRiesgo", encuestaService.obtenerEtiquetaRiesgo(encuesta.getNivelRiesgo()));
-                
                 return ResponseEntity.ok(response);
             } else {
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", false);
-                response.put("mensaje", "Error al crear rescatista");
-                return ResponseEntity.status(500).body(response);
+                return errorResponse("Error al registrar el rescatista.");
             }
         } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("mensaje", "Error: " + e.getMessage());
-            return ResponseEntity.status(500).body(response);
+            return errorResponse("Error interno: " + e.getMessage());
         }
     }
 
+    /** Lista todas las encuestas (Panel 2 — Dashboard) */
     @GetMapping("/api/encuestas")
     @ResponseBody
     public ResponseEntity<List<Encuesta>> obtenerEncuestas() {
         return ResponseEntity.ok(encuestaService.obtenerTodasLasEncuestas());
     }
 
+    /** Detalle de una encuesta (Panel 3 — Perfil) */
+    @GetMapping("/api/encuestas/{id}")
+    @ResponseBody
+    public ResponseEntity<Encuesta> obtenerEncuesta(@PathVariable Long id) {
+        return encuestaRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    /** Elimina una encuesta */
+    @DeleteMapping("/api/encuestas/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> eliminarEncuesta(@PathVariable Long id) {
+        try {
+            if (!encuestaRepository.existsById(id))
+                return errorResponse("Encuesta no encontrada.");
+            encuestaRepository.deleteById(id);
+            Map<String, Object> r = new HashMap<>();
+            r.put("success", true);
+            r.put("mensaje", "Encuesta eliminada exitosamente");
+            return ResponseEntity.ok(r);
+        } catch (Exception e) {
+            return errorResponse("Error al eliminar: " + e.getMessage());
+        }
+    }
+
+    /** Edita nombre y cédula del rescatista asociado */
+    @PutMapping("/api/rescatistas/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> actualizarRescatista(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> datos) {
+        try {
+            Optional<Rescatista> opt = rescatistaRepository.findById(id);
+            if (opt.isEmpty()) return errorResponse("Rescatista no encontrado.");
+
+            Rescatista r = opt.get();
+            String nuevoNombre = (String) datos.get("nombreCompleto");
+            String nuevaCedula = (String) datos.get("cedula");
+
+            if (nuevoNombre != null && !nuevoNombre.isBlank())
+                r.setNombreCompleto(nuevoNombre);
+            if (nuevaCedula != null && !nuevaCedula.isBlank())
+                r.setCedula(nuevaCedula);
+
+            rescatistaRepository.save(r);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("mensaje", "Datos actualizados correctamente");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return errorResponse("Error al actualizar: " + e.getMessage());
+        }
+    }
+
+    /** Alertas de riesgo alto */
     @GetMapping("/api/alertas")
     @ResponseBody
     public ResponseEntity<List<Encuesta>> obtenerAlertas() {
         return ResponseEntity.ok(encuestaService.obtenerAlertasRiesgo());
     }
 
-    @GetMapping("/dashboard")
-    public String dashboard(Model model) {
-        List<Encuesta> encuestas = encuestaService.obtenerTodasLasEncuestas();
-        model.addAttribute("encuestas", encuestas);
-        return "forward:/dashboard.html";
+    // ─── Helper ────────────────────────────────────────────────────────────────
+    private ResponseEntity<Map<String, Object>> errorResponse(String mensaje) {
+        Map<String, Object> r = new HashMap<>();
+        r.put("success", false);
+        r.put("mensaje", mensaje);
+        return ResponseEntity.status(500).body(r);
     }
 }

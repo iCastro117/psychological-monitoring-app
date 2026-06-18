@@ -1,140 +1,182 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Monitoreo Psicológico USAR COL-13</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/css/custom.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Monitoreo Psicológico USAR COL-13</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body class="bg-gray-50">
-    <div class="min-h-screen flex flex-col">
-        <!-- Header -->
-        <header class="bg-gradient-to-r from-green-900 to-green-800 text-white py-6 shadow-lg">
-            <div class="max-w-7xl mx-auto px-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h1 class="text-4xl font-bold">📊 Dashboard USAR COL-13</h1>
-                        <p class="text-green-100 mt-1">Panel de Monitoreo Psicológico</p>
-                    </div>
-                    <div>
-                        <a href="/" class="px-6 py-2 bg-white text-green-700 rounded-lg hover:bg-gray-100 font-semibold transition">
-                            ← Nueva Encuesta
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </header>
+<div class="min-h-screen flex flex-col">
 
-        <!-- Main Content -->
-        <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-8">
-            <!-- Filtros -->
-            <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-                <h2 class="text-lg font-bold text-gray-800 mb-4">Filtros</h2>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Búsqueda</label>
-                        <input type="text" id="busqueda" placeholder="Nombre o código..."
-                            class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-700">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nivel de Riesgo</label>
-                        <select id="filtroRiesgo"
-                            class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-700">
-                            <option value="">Todos</option>
-                            <option value="1">Mínimo</option>
-                            <option value="2">Bajo</option>
-                            <option value="3">Medio</option>
-                            <option value="4">Alto</option>
-                            <option value="5">Crítico</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Ordenar por</label>
-                        <select id="ordenar"
-                            class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-700">
-                            <option value="fecha-desc">Más reciente</option>
-                            <option value="fecha-asc">Más antiguo</option>
-                            <option value="riesgo-desc">Mayor riesgo</option>
-                        </select>
-                    </div>
-                    <div class="flex items-end">
-                        <button id="btnRefrescar" class="w-full px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 font-semibold transition">
-                            🔄 Refrescar
-                        </button>
-                    </div>
-                </div>
-            </div>
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-green-900 to-green-800 text-white py-5 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-bold">📊 Dashboard USAR COL-13</h1>
+        <p class="text-green-100 mt-0.5 text-sm">Panel de Monitoreo Psicológico</p>
+      </div>
+      <a href="/" class="px-4 py-2 bg-white text-green-800 rounded-lg hover:bg-gray-100 font-semibold text-sm transition">
+        ← Nueva Encuesta
+      </a>
+    </div>
+  </header>
 
-            <!-- Estadísticas -->
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-                <div class="bg-green-50 border-l-4 border-green-700 p-4 rounded">
-                    <div class="text-3xl font-bold text-green-700" id="totalEncuestas">0</div>
-                    <div class="text-sm text-gray-600">Encuestas Totales</div>
-                </div>
-                <div class="bg-red-50 border-l-4 border-red-700 p-4 rounded">
-                    <div class="text-3xl font-bold text-red-700" id="criticos">0</div>
-                    <div class="text-sm text-gray-600">Críticos (Riesgo 5)</div>
-                </div>
-                <div class="bg-orange-50 border-l-4 border-orange-700 p-4 rounded">
-                    <div class="text-3xl font-bold text-orange-700" id="altos">0</div>
-                    <div class="text-sm text-gray-600">Altos (Riesgo 4)</div>
-                </div>
-                <div class="bg-yellow-50 border-l-4 border-yellow-700 p-4 rounded">
-                    <div class="text-3xl font-bold text-yellow-700" id="medios">0</div>
-                    <div class="text-sm text-gray-600">Medios (Riesgo 3)</div>
-                </div>
-                <div class="bg-blue-50 border-l-4 border-blue-700 p-4 rounded">
-                    <div class="text-3xl font-bold text-blue-700" id="bajos">0</div>
-                    <div class="text-sm text-gray-600">Bajos (Riesgo 2)</div>
-                </div>
-            </div>
+  <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-6 space-y-6">
 
-            <!-- Tabla de Encuestas -->
-            <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                    <h2 class="text-lg font-bold text-gray-800">Registro de Encuestas</h2>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead class="bg-gray-100 border-b border-gray-200">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-sm font-bold text-gray-700">Semáforo</th>
-                                <th class="px-6 py-3 text-left text-sm font-bold text-gray-700">Nombre/Código</th>
-                                <th class="px-6 py-3 text-left text-sm font-bold text-gray-700">Rango</th>
-                                <th class="px-6 py-3 text-left text-sm font-bold text-gray-700">Unidad</th>
-                                <th class="px-6 py-3 text-left text-sm font-bold text-gray-700">Fecha</th>
-                                <th class="px-6 py-3 text-left text-sm font-bold text-gray-700">Riesgo</th>
-                                <th class="px-6 py-3 text-left text-sm font-bold text-gray-700">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaEncuestas" class="divide-y divide-gray-200">
-                            <tr class="text-center py-8">
-                                <td colspan="7" class="px-6 py-8 text-gray-500">Cargando encuestas...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
-
-        <!-- Footer -->
-        <footer class="bg-gray-900 text-gray-400 py-4 text-center text-sm mt-8">
-            <p>© 2026 Sistema de Monitoreo Psicológico USAR COL-13 | Confidencial</p>
-        </footer>
+    <!-- Tarjetas de estadísticas -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div class="bg-white border-l-4 border-green-700 p-4 rounded-xl shadow-sm col-span-2 sm:col-span-1">
+        <div class="text-3xl font-bold text-green-700" id="totalEncuestas">0</div>
+        <div class="text-xs text-gray-500 mt-1">Total registros</div>
+      </div>
+      <div class="bg-white border-l-4 border-emerald-500 p-4 rounded-xl shadow-sm">
+        <div class="text-3xl font-bold text-emerald-600" id="minimos">0</div>
+        <div class="text-xs text-gray-500 mt-1">Mínimo</div>
+      </div>
+      <div class="bg-white border-l-4 border-blue-500 p-4 rounded-xl shadow-sm">
+        <div class="text-3xl font-bold text-blue-600" id="bajos">0</div>
+        <div class="text-xs text-gray-500 mt-1">Bajo</div>
+      </div>
+      <div class="bg-white border-l-4 border-yellow-500 p-4 rounded-xl shadow-sm">
+        <div class="text-3xl font-bold text-yellow-600" id="medios">0</div>
+        <div class="text-xs text-gray-500 mt-1">Medio</div>
+      </div>
+      <div class="bg-white border-l-4 border-orange-500 p-4 rounded-xl shadow-sm">
+        <div class="text-3xl font-bold text-orange-600" id="altos">0</div>
+        <div class="text-xs text-gray-500 mt-1">Alto</div>
+      </div>
+      <div class="bg-white border-l-4 border-red-600 p-4 rounded-xl shadow-sm">
+        <div class="text-3xl font-bold text-red-700" id="criticos">0</div>
+        <div class="text-xs text-gray-500 mt-1">Crítico</div>
+      </div>
     </div>
 
-    <!-- Modal de Detalles -->
-    <div id="modalDetalles" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-8 max-w-2xl max-h-96 overflow-y-auto shadow-2xl">
-            <h3 class="text-2xl font-bold text-gray-800 mb-4">Detalle de Respuestas</h3>
-            <div id="detallesContenido" class="space-y-2 text-sm"></div>
-            <button id="btnCerrarDetalles" class="mt-6 px-6 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 font-semibold">
-                Cerrar
-            </button>
-        </div>
+    <!-- Gráfica de distribución de riesgo -->
+    <div class="bg-white rounded-xl shadow-sm p-5 flex flex-col sm:flex-row items-center gap-6">
+      <div class="w-52 h-52 flex-shrink-0">
+        <canvas id="riesgoChart"></canvas>
+      </div>
+      <div class="flex-1">
+        <h2 class="font-bold text-gray-800 mb-3">Distribución de niveles de riesgo</h2>
+        <div id="leyendaChart" class="space-y-2 text-sm"></div>
+      </div>
     </div>
 
-    <script src="/js/dashboard.js"></script>
+    <!-- Filtros -->
+    <div class="bg-white p-5 rounded-xl shadow-sm">
+      <h2 class="font-bold text-gray-800 mb-3">Filtros</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <input type="text" id="busqueda" placeholder="Buscar por nombre o cédula..."
+          class="px-3 py-2 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-700 col-span-2">
+        <select id="filtroRiesgo"
+          class="px-3 py-2 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-700">
+          <option value="">Todos los niveles</option>
+          <option value="1">Mínimo</option>
+          <option value="2">Bajo</option>
+          <option value="3">Medio</option>
+          <option value="4">Alto</option>
+          <option value="5">Crítico</option>
+        </select>
+        <button id="btnRefrescar"
+          class="px-4 py-2 bg-green-800 text-white rounded-lg hover:bg-green-900 font-semibold text-sm transition">
+          🔄 Refrescar
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabla de registros -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+        <h2 class="font-bold text-gray-800">Registro de encuestas</h2>
+        <span id="contadorTabla" class="text-xs text-gray-400"></span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="px-4 py-3 text-left font-semibold text-gray-600">Semáforo</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-600">Nombre Completo</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-600">Cédula de Ciudadanía</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-600">Fecha</th>
+              <th class="px-4 py-3 text-left font-semibold text-gray-600">Nivel de Riesgo</th>
+              <th class="px-4 py-3 text-center font-semibold text-gray-600">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaEncuestas">
+            <tr><td colspan="6" class="px-4 py-10 text-center text-gray-400">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="bg-gray-900 text-gray-400 py-4 text-center text-xs mt-4">
+    © 2026 Sistema de Monitoreo Psicológico USAR COL-13 | Confidencial
+  </footer>
+</div>
+
+<!-- Modal EDITAR rescatista -->
+<div id="modalEditar" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
+  <div class="bg-white rounded-2xl p-7 max-w-md w-full shadow-2xl">
+    <h3 class="text-lg font-bold text-gray-800 mb-5">Editar datos del rescatista</h3>
+    <input type="hidden" id="editRescatistaId">
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">
+          Nombre Completo <span class="text-red-600">*</span>
+        </label>
+        <input type="text" id="editNombre"
+          class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-700 text-sm"
+          oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]/g, '')">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">
+          Cédula de Ciudadanía <span class="text-red-600">*</span>
+        </label>
+        <input type="text" id="editCedula" inputmode="numeric" maxlength="15"
+          class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-700 text-sm"
+          oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+      </div>
+    </div>
+    <div class="flex gap-3 mt-6">
+      <button id="btnCancelarEditar"
+        class="flex-1 py-2 border-2 border-gray-300 rounded-xl text-gray-700 font-semibold hover:bg-gray-50 transition text-sm">
+        Cancelar
+      </button>
+      <button id="btnGuardarEditar"
+        class="flex-1 py-2 bg-green-800 text-white rounded-xl font-bold hover:bg-green-900 transition text-sm">
+        Guardar cambios
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal ELIMINAR confirmación -->
+<div id="modalEliminar" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
+  <div class="bg-white rounded-2xl p-7 max-w-sm w-full shadow-2xl text-center">
+    <div class="text-5xl mb-3">🗑️</div>
+    <h3 class="text-lg font-bold text-gray-800 mb-2">¿Eliminar este registro?</h3>
+    <p class="text-gray-500 text-sm mb-6">Esta acción no se puede deshacer.</p>
+    <input type="hidden" id="eliminarId">
+    <div class="flex gap-3">
+      <button id="btnCancelarEliminar"
+        class="flex-1 py-2 border-2 border-gray-300 rounded-xl text-gray-700 font-semibold hover:bg-gray-50 transition text-sm">
+        Cancelar
+      </button>
+      <button id="btnConfirmarEliminar"
+        class="flex-1 py-2 bg-red-700 text-white rounded-xl font-bold hover:bg-red-800 transition text-sm">
+        Sí, eliminar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast de notificación -->
+<div id="toast" class="hidden fixed bottom-6 right-6 px-5 py-3 rounded-xl text-white font-semibold shadow-lg z-50 text-sm"></div>
+
+<script src="/js/dashboard.js"></script>
 </body>
 </html>

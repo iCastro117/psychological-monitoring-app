@@ -1,141 +1,173 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoreo Psicológico - USAR COL-13</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/css/custom.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monitoreo Psicológico - USAR COL-13</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-white">
-    <div class="min-h-screen flex flex-col">
-        <!-- Header -->
-        <header class="bg-gradient-to-r from-green-900 to-green-800 text-white py-6 shadow-lg">
-            <div class="max-w-7xl mx-auto px-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h1 class="text-4xl font-bold">🚨 USAR COL-13</h1>
-                        <p class="text-green-100 mt-1">Sistema de Monitoreo Psicológico</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-sm text-green-100">Evaluación de Bienestar Emocional</p>
-                    </div>
-                </div>
-            </div>
-        </header>
+<div class="min-h-screen flex flex-col">
 
-        <!-- Main Content -->
-        <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-8">
-            <!-- Progress Bar -->
-            <div class="mb-8">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-sm font-semibold text-gray-700">Progreso: <span id="progreso">0</span>/23</span>
-                    <span class="text-xs text-gray-500" id="porcentaje">0%</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-3">
-                    <div id="barraProgreso" class="bg-gradient-to-r from-green-700 to-green-600 h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
-                </div>
-            </div>
-
-            <!-- Form -->
-            <form id="encuestaForm" class="space-y-8">
-                <!-- Datos del Rescatista -->
-                <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                        <span class="w-8 h-8 bg-green-700 text-white rounded-full flex items-center justify-center mr-2 text-sm">👤</span>
-                        Datos del Rescatista
-                    </h2>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Nombre / Código *</label>
-                            <input type="text" id="nombreCodigo" name="nombreCodigo" required
-                                class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-700 transition">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Rango Militar *</label>
-                            <select id="rango" name="rango" required
-                                class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-700 transition">
-                                <option value="">Seleccionar...</option>
-                                <option value="Capitán">Capitán</option>
-                                <option value="Teniente">Teniente</option>
-                                <option value="Sargento">Sargento</option>
-                                <option value="Cabo">Cabo</option>
-                                <option value="Soldado">Soldado</option>
-                                <option value="Bombero">Bombero</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Unidad *</label>
-                            <input type="text" id="unidad" name="unidad" placeholder="ej. Equipo A, Turno 1" required
-                                class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-700 transition">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Encuesta -->
-                <div class="space-y-6">
-                    <div id="preguntasContainer"></div>
-                </div>
-
-                <!-- Botón de Envío -->
-                <div class="flex justify-center pt-4">
-                    <button type="submit" id="btnEnviar"
-                        class="px-10 py-3 bg-green-700 hover:bg-green-800 active:bg-green-900 text-white font-bold rounded-lg transition transform hover:scale-105 active:scale-95 shadow-lg">
-                        ✓ Enviar Encuesta
-                    </button>
-                </div>
-            </form>
-        </main>
-
-        <!-- Footer -->
-        <footer class="bg-gray-900 text-gray-400 py-4 text-center text-sm mt-8">
-            <p>© 2026 Sistema de Monitoreo Psicológico USAR COL-13 | Confidencial</p>
-        </footer>
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-green-900 to-green-800 text-white py-6 shadow-lg">
+    <div class="max-w-4xl mx-auto px-4 flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold">🚨 USAR COL-13</h1>
+        <p class="text-green-100 mt-1 text-sm">Sistema de Monitoreo Psicológico</p>
+      </div>
+      <a href="/dashboard" class="text-sm underline text-green-200 hover:text-white">Ver panel →</a>
     </div>
+  </header>
 
-    <!-- Modal de Confirmación -->
-    <div id="modalConfirmacion" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-8 max-w-md shadow-2xl">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">Confirmar Envío</h3>
-            <p class="text-gray-600 mb-6">¿Está seguro de enviar su registro de monitoreo psicológico?</p>
-            <p class="text-sm text-gray-500 mb-6">Una vez enviado, los datos serán procesados por el sistema.</p>
-            <div class="flex gap-4">
-                <button id="btnCancelar" class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
-                    Cancelar
-                </button>
-                <button id="btnConfirmar" class="flex-1 px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 font-semibold">
-                    Confirmar
-                </button>
-            </div>
+  <!-- Barra de progreso -->
+  <div class="bg-gray-100 border-b border-gray-200 px-4 py-2">
+    <div class="max-w-4xl mx-auto">
+      <div class="flex justify-between text-xs text-gray-500 mb-1">
+        <span>Progreso: <span id="progreso" class="font-bold text-green-800">0</span>/23 preguntas</span>
+        <span id="porcentaje" class="font-bold text-green-800">0%</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div id="barraProgreso"
+          class="bg-gradient-to-r from-green-700 to-green-500 h-2 rounded-full transition-all duration-300"
+          style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario -->
+  <main class="flex-1 max-w-4xl mx-auto w-full px-4 py-8">
+    <form id="encuestaForm" novalidate class="space-y-8">
+
+      <!-- Sección de datos personales -->
+      <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm">
+        <h2 class="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2">
+          <span class="w-8 h-8 bg-green-800 text-white rounded-full flex items-center justify-center text-sm">👤</span>
+          Por favor ingrese sus datos personales
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+          <!-- Nombre Completo -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-800 mb-1">
+              Nombre Completo
+              <span class="text-red-600 font-bold ml-0.5">*</span>
+            </label>
+            <input
+              type="text"
+              id="nombreCompleto"
+              placeholder="Ej: Juan Pérez García"
+              autocomplete="off"
+              class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg
+                     focus:outline-none focus:border-green-700 transition text-gray-900"
+              oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]/g, '')"
+              onkeypress="return /[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]/.test(event.key)"
+            >
+            <p class="text-xs text-gray-400 mt-1">Solo letras y espacios</p>
+          </div>
+
+          <!-- Cédula de Ciudadanía -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-800 mb-1">
+              Cédula de Ciudadanía
+              <span class="text-red-600 font-bold ml-0.5">*</span>
+            </label>
+            <input
+              type="text"
+              id="cedula"
+              inputmode="numeric"
+              placeholder="Ej: 1023456789"
+              maxlength="15"
+              autocomplete="off"
+              class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg
+                     focus:outline-none focus:border-green-700 transition text-gray-900"
+              oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+              onkeypress="return /[0-9]/.test(event.key)"
+            >
+            <p class="text-xs text-gray-400 mt-1">Solo números, mínimo 10 dígitos</p>
+          </div>
+
         </div>
-    </div>
+      </div>
 
-    <!-- Modal de Éxito -->
-    <div id="modalExito" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-8 max-w-md shadow-2xl text-center">
-            <div class="text-6xl mb-4">✅</div>
-            <h3 class="text-2xl font-bold text-green-700 mb-2">¡Registro Exitoso!</h3>
-            <p class="text-gray-600 mb-2">Su encuesta ha sido guardada correctamente.</p>
-            <p id="nivelRiesgoTexto" class="text-lg font-semibold mb-6"></p>
-            <button id="btnNueva" class="px-6 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 font-semibold">
-                Nueva Encuesta
-            </button>
-        </div>
-    </div>
+      <!-- Escala de referencia -->
+      <div class="flex flex-wrap gap-2 text-xs">
+        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full font-semibold">1 = Nunca</span>
+        <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full font-semibold">2 = Rara vez</span>
+        <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full font-semibold">3 = A veces</span>
+        <span class="bg-orange-100 text-orange-800 px-3 py-1 rounded-full font-semibold">4 = Frecuentemente</span>
+        <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full font-semibold">5 = Siempre</span>
+      </div>
 
-    <!-- Modal de Error -->
-    <div id="modalError" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-8 max-w-md shadow-2xl text-center">
-            <div class="text-6xl mb-4">❌</div>
-            <h3 class="text-2xl font-bold text-red-700 mb-2">Error en el Envío</h3>
-            <p id="mensajeError" class="text-gray-600 mb-6"></p>
-            <button id="btnCerrarError" class="px-6 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 font-semibold">
-                Cerrar
-            </button>
-        </div>
-    </div>
+      <!-- Preguntas -->
+      <div id="preguntasContainer" class="space-y-5"></div>
 
-    <script src="/js/app.js"></script>
+      <!-- Botón enviar -->
+      <div class="flex justify-center pt-2 pb-8">
+        <button type="button" id="btnEnviar"
+          class="px-12 py-3 bg-green-800 hover:bg-green-900 text-white font-bold
+                 rounded-xl transition shadow-lg text-base">
+          ✓ Enviar Encuesta
+        </button>
+      </div>
+
+    </form>
+  </main>
+
+  <footer class="bg-gray-900 text-gray-400 py-4 text-center text-xs">
+    © 2026 Sistema de Monitoreo Psicológico USAR COL-13 | Confidencial
+  </footer>
+</div>
+
+<!-- Modal de Confirmación -->
+<div id="modalConfirmacion" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
+  <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+    <h3 class="text-xl font-bold text-gray-800 mb-3">Confirmar envío</h3>
+    <p class="text-gray-600 mb-2">¿Está seguro de enviar su registro de monitoreo psicológico?</p>
+    <p class="text-sm text-gray-400 mb-6">Una vez enviado, los datos serán procesados por el sistema.</p>
+    <div class="flex gap-3">
+      <button id="btnCancelar"
+        class="flex-1 px-4 py-2.5 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-semibold transition">
+        Cancelar
+      </button>
+      <button id="btnConfirmar"
+        class="flex-1 px-4 py-2.5 bg-green-800 text-white rounded-xl hover:bg-green-900 font-bold transition">
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Éxito -->
+<div id="modalExito" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
+  <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl text-center">
+    <div class="text-6xl mb-4">✅</div>
+    <h3 class="text-2xl font-bold text-green-700 mb-3">¡Registro exitoso!</h3>
+    <p class="text-gray-600 mb-6">
+      Su encuesta ha sido registrada correctamente.<br>
+      <span class="text-sm text-gray-400">El equipo de psicología revisará su información.</span>
+    </p>
+    <button id="btnNueva"
+      class="px-8 py-2.5 bg-green-800 text-white rounded-xl hover:bg-green-900 font-semibold transition">
+      Nueva encuesta
+    </button>
+  </div>
+</div>
+
+<!-- Modal de Error -->
+<div id="modalError" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
+  <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl text-center">
+    <div class="text-6xl mb-4">❌</div>
+    <h3 class="text-2xl font-bold text-red-700 mb-3">Error al enviar</h3>
+    <p id="mensajeError" class="text-gray-600 mb-6"></p>
+    <button id="btnCerrarError"
+      class="px-8 py-2.5 bg-red-700 text-white rounded-xl hover:bg-red-800 font-semibold transition">
+      Cerrar
+    </button>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
 </body>
 </html>

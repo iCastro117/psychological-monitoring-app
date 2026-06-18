@@ -1,201 +1,262 @@
 let encuestasGlobales = [];
+let chartInstance = null;
 
-const preguntas = [
-    "Después de la última emergencia atendida me he sentido emocionalmente agotado.",
-    "He tenido pensamientos recurrentes sobre la emergencia que atendí recientemente.",
-    "He presentado dificultades para dormir después de la última operación.",
-    "Siento que me he recuperado emocionalmente de la última emergencia atendida.",
-    "Me siento físicamente cansado debido a la intervención reciente.",
-    "Siento que tengo la concentración necesaria para participar en una nueva emergencia.",
-    "Me siento mentalmente preparado para enfrentar una nueva operación de rescate.",
-    "La emergencia anterior generó en mí un impacto emocional significativo.",
-    "Considero que el apoyo de mi equipo me ayuda a manejar situaciones emocionalmente difíciles.",
-    "Antes de entrar a una nueva emergencia siento niveles de estrés o tensión.",
-    "Siento confianza en mi capacidad para responder adecuadamente en una nueva operación.",
-    "Me siento emocionalmente estable en este momento.",
-    "He presentado irritabilidad o cambios de humor después de la emergencia anterior.",
-    "Siento que el descanso posterior a la última emergencia fue suficiente.",
-    "Considero importante evaluar mi estado psicológico antes de entrar a una nueva misión.",
-    "Me siento motivado para participar en una nueva operación de rescate.",
-    "Siento que el trabajo en emergencias puede afectar mi bienestar emocional.",
-    "En este momento siento tranquilidad emocional.",
-    "¿Se le dificulta fue mantener la concentración durante la misión?",
-    "¿Se siente afectado(a) emocionalmente por las situaciones observadas durante la misión?",
-    "¿En qué medida experimentó preocupación o ansiedad por la seguridad de las víctimas, compañeros o de usted mismo(a)?",
-    "Considero útil contar con herramientas tecnológicas que monitoreen el estado psicológico del equipo.",
-    "Estaría dispuesto a registrar mi estado emocional en un software antes y después de cada emergencia."
-];
+// ─── Configuración de niveles de riesgo ──────────────────────────────────────
 
-document.addEventListener('DOMContentLoaded', function() {
+const RIESGO = {
+    1: { etiqueta: 'MÍNIMO',  color: '#16a34a', bg: 'bg-emerald-100', texto: 'text-emerald-800', semaforo: 'bg-green-500'  },
+    2: { etiqueta: 'BAJO',    color: '#2563eb', bg: 'bg-blue-100',    texto: 'text-blue-800',    semaforo: 'bg-blue-500'   },
+    3: { etiqueta: 'MEDIO',   color: '#ca8a04', bg: 'bg-yellow-100',  texto: 'text-yellow-800',  semaforo: 'bg-yellow-500' },
+    4: { etiqueta: 'ALTO',    color: '#ea580c', bg: 'bg-orange-100',  texto: 'text-orange-800',  semaforo: 'bg-orange-500' },
+    5: { etiqueta: 'CRÍTICO', color: '#dc2626', bg: 'bg-red-100',     texto: 'text-red-800',     semaforo: 'bg-red-600'    }
+};
+
+// ─── Inicio ───────────────────────────────────────────────────────────────────
+
+document.addEventListener('DOMContentLoaded', function () {
     cargarEncuestas();
-    configurarEventos();
+
+    document.getElementById('btnRefrescar').addEventListener('click', cargarEncuestas);
+    document.getElementById('busqueda').addEventListener('input', filtrarYRenderizar);
+    document.getElementById('filtroRiesgo').addEventListener('change', filtrarYRenderizar);
+
+    // Modal editar
+    document.getElementById('btnCancelarEditar').addEventListener('click', () =>
+        document.getElementById('modalEditar').classList.add('hidden'));
+    document.getElementById('btnGuardarEditar').addEventListener('click', guardarEdicion);
+
+    // Modal eliminar
+    document.getElementById('btnCancelarEliminar').addEventListener('click', () =>
+        document.getElementById('modalEliminar').classList.add('hidden'));
+    document.getElementById('btnConfirmarEliminar').addEventListener('click', confirmarEliminar);
 });
 
-function configurarEventos() {
-    document.getElementById('btnRefrescar').addEventListener('click', cargarEncuestas);
-    document.getElementById('busqueda').addEventListener('keyup', filtrarTabla);
-    document.getElementById('filtroRiesgo').addEventListener('change', filtrarTabla);
-    document.getElementById('ordenar').addEventListener('change', ordenarTabla);
-    document.getElementById('btnCerrarDetalles').addEventListener('click', function() {
-        document.getElementById('modalDetalles').classList.add('hidden');
-    });
-}
+// ─── Carga de datos ───────────────────────────────────────────────────────────
 
 function cargarEncuestas() {
     fetch('/api/encuestas')
-        .then(response => response.json())
+        .then(r => r.json())
         .then(data => {
             encuestasGlobales = data;
             actualizarEstadisticas();
-            renderizarTabla(data);
+            actualizarGrafica();
+            filtrarYRenderizar();
         })
-        .catch(error => {
-            console.error('Error:', error);
-            document.getElementById('tablaEncuestas').innerHTML = `
-                <tr class="text-center">
-                    <td colspan="7" class="px-6 py-8 text-red-500">Error al cargar las encuestas</td>
-                </tr>
-            `;
+        .catch(err => {
+            document.getElementById('tablaEncuestas').innerHTML =
+                `<tr><td colspan="6" class="px-4 py-10 text-center text-red-500">
+                    Error al cargar los datos. Verifique la conexión con el servidor.
+                 </td></tr>`;
+            console.error('Error:', err);
         });
 }
 
+// ─── Estadísticas ────────────────────────────────────────────────────────────
+
 function actualizarEstadisticas() {
     document.getElementById('totalEncuestas').textContent = encuestasGlobales.length;
-    
-    const criticos = encuestasGlobales.filter(e => e.nivelRiesgo === 5).length;
-    const altos = encuestasGlobales.filter(e => e.nivelRiesgo === 4).length;
-    const medios = encuestasGlobales.filter(e => e.nivelRiesgo === 3).length;
-    const bajos = encuestasGlobales.filter(e => e.nivelRiesgo === 2).length;
-    
-    document.getElementById('criticos').textContent = criticos;
-    document.getElementById('altos').textContent = altos;
-    document.getElementById('medios').textContent = medios;
-    document.getElementById('bajos').textContent = bajos;
+    [1, 2, 3, 4, 5].forEach(n => {
+        const ids = { 1: 'minimos', 2: 'bajos', 3: 'medios', 4: 'altos', 5: 'criticos' };
+        document.getElementById(ids[n]).textContent =
+            encuestasGlobales.filter(e => e.nivelRiesgo === n).length;
+    });
+}
+
+// ─── Gráfica de dona ─────────────────────────────────────────────────────────
+
+function actualizarGrafica() {
+    const counts = [1, 2, 3, 4, 5].map(n =>
+        encuestasGlobales.filter(e => e.nivelRiesgo === n).length);
+
+    const labels  = ['Mínimo', 'Bajo', 'Medio', 'Alto', 'Crítico'];
+    const colors  = ['#16a34a', '#2563eb', '#ca8a04', '#ea580c', '#dc2626'];
+
+    const ctx = document.getElementById('riesgoChart').getContext('2d');
+
+    if (chartInstance) chartInstance.destroy();
+
+    chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels,
+            datasets: [{ data: counts, backgroundColor: colors, borderWidth: 2 }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // Leyenda personalizada
+    const leyenda = document.getElementById('leyendaChart');
+    leyenda.innerHTML = labels.map((label, i) => `
+        <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full flex-shrink-0" style="background:${colors[i]}"></span>
+            <span class="text-gray-700 font-medium">${label}</span>
+            <span class="ml-auto font-bold text-gray-800">${counts[i]}</span>
+            <span class="text-gray-400 text-xs">(${encuestasGlobales.length > 0
+                ? Math.round(counts[i] / encuestasGlobales.length * 100) : 0}%)</span>
+        </div>
+    `).join('');
+}
+
+// ─── Filtrado y renderizado ───────────────────────────────────────────────────
+
+function filtrarYRenderizar() {
+    const busqueda = document.getElementById('busqueda').value.toLowerCase();
+    const filtroN  = document.getElementById('filtroRiesgo').value;
+
+    let filtradas = encuestasGlobales.filter(e => {
+        const nombre = (e.rescatista?.nombreCompleto || '').toLowerCase();
+        const cedula = (e.rescatista?.cedula || '').toLowerCase();
+        const coinBusqueda = nombre.includes(busqueda) || cedula.includes(busqueda);
+        const coinRiesgo   = filtroN === '' || String(e.nivelRiesgo) === filtroN;
+        return coinBusqueda && coinRiesgo;
+    });
+
+    document.getElementById('contadorTabla').textContent =
+        `${filtradas.length} registro(s)`;
+
+    renderizarTabla(filtradas);
 }
 
 function renderizarTabla(encuestas) {
-    const tabla = document.getElementById('tablaEncuestas');
-    
+    const tbody = document.getElementById('tablaEncuestas');
+
     if (encuestas.length === 0) {
-        tabla.innerHTML = `
-            <tr class="text-center">
-                <td colspan="7" class="px-6 py-8 text-gray-500">No hay encuestas disponibles</td>
-            </tr>
-        `;
+        tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-10 text-center text-gray-400">
+            No hay registros que coincidan con los filtros.</td></tr>`;
         return;
     }
 
-    tabla.innerHTML = encuestas.map(encuesta => {
-        const riesgo = encuesta.nivelRiesgo || 1;
-        const { color, etiqueta } = obtenerColorRiesgo(riesgo);
-        const fecha = new Date(encuesta.fechaHora).toLocaleString('es-CO');
-        
+    tbody.innerHTML = encuestas.map(e => {
+        const nivel  = e.nivelRiesgo || 1;
+        const r      = RIESGO[nivel] || RIESGO[1];
+        const fecha  = e.fechaHora
+            ? new Date(e.fechaHora).toLocaleString('es-CO')
+            : '—';
+        const nombre = e.rescatista?.nombreCompleto || '—';
+        const cedula = e.rescatista?.cedula || '—';
+        const rid    = e.rescatista?.id || '';
+
         return `
-            <tr class="hover:bg-gray-50 transition">
-                <td class="px-6 py-4">
-                    <div class="w-6 h-6 rounded-full ${color} border-2 border-gray-300"></div>
-                </td>
-                <td class="px-6 py-4 font-semibold text-gray-800">${encuesta.rescatista.nombreCodigo}</td>
-                <td class="px-6 py-4 text-gray-700">${encuesta.rescatista.rango}</td>
-                <td class="px-6 py-4 text-gray-700">${encuesta.rescatista.unidad}</td>
-                <td class="px-6 py-4 text-sm text-gray-600">${fecha}</td>
-                <td class="px-6 py-4">
-                    <span class="px-3 py-1 rounded-full text-sm font-semibold ${obtenerClaseRiesgo(riesgo)}">
-                        ${etiqueta}
-                    </span>
-                </td>
-                <td class="px-6 py-4">
-                    <button class="px-4 py-1 bg-green-700 text-white rounded hover:bg-green-800 text-sm transition" 
-                        onclick="mostrarDetalles(${encuesta.idEncuesta})">
-                        Ver
+        <tr class="hover:bg-gray-50 transition border-b border-gray-100">
+            <td class="px-4 py-3">
+                <span class="w-5 h-5 inline-block rounded-full ${r.semaforo}"
+                      title="${r.etiqueta}"></span>
+            </td>
+            <td class="px-4 py-3 font-semibold text-gray-800">${nombre}</td>
+            <td class="px-4 py-3 text-gray-600">${cedula}</td>
+            <td class="px-4 py-3 text-gray-500 text-xs">${fecha}</td>
+            <td class="px-4 py-3">
+                <span class="px-2 py-1 rounded-full text-xs font-bold ${r.bg} ${r.texto}">
+                    ${r.etiqueta}
+                </span>
+            </td>
+            <td class="px-4 py-3">
+                <div class="flex gap-1 justify-center">
+                    <button onclick="verPerfil(${e.idEncuesta})"
+                        class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition">
+                        👁 VER
                     </button>
-                </td>
-            </tr>
-        `;
+                    <button onclick="abrirEditar(${rid}, '${nombre.replace(/'/g,"\\'")}', '${cedula}')"
+                        class="px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded text-xs font-semibold transition">
+                        ✏️ EDITAR
+                    </button>
+                    <button onclick="abrirEliminar(${e.idEncuesta})"
+                        class="px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-semibold transition">
+                        🗑 ELIMINAR
+                    </button>
+                </div>
+            </td>
+        </tr>`;
     }).join('');
 }
 
-function obtenerColorRiesgo(nivel) {
-    const colores = {
-        1: { color: 'bg-green-500', etiqueta: '✅ MÍNIMO' },
-        2: { color: 'bg-blue-500', etiqueta: '⚠️ BAJO' },
-        3: { color: 'bg-yellow-500', etiqueta: '🟠 MEDIO' },
-        4: { color: 'bg-orange-500', etiqueta: '🔴 ALTO' },
-        5: { color: 'bg-red-600', etiqueta: '🚨 CRÍTICO' }
-    };
-    return colores[nivel] || colores[1];
+// ─── Acciones ────────────────────────────────────────────────────────────────
+
+/** VER → abre el Panel 3 (perfil individual) */
+function verPerfil(idEncuesta) {
+    window.location.href = `/perfil?id=${idEncuesta}`;
 }
 
-function obtenerClaseRiesgo(nivel) {
-    const clases = {
-        1: 'bg-green-100 text-green-800',
-        2: 'bg-blue-100 text-blue-800',
-        3: 'bg-yellow-100 text-yellow-800',
-        4: 'bg-orange-100 text-orange-800',
-        5: 'bg-red-100 text-red-800'
-    };
-    return clases[nivel] || clases[1];
+/** EDITAR → abre modal con datos prellenados */
+function abrirEditar(rescatistaId, nombre, cedula) {
+    document.getElementById('editRescatistaId').value = rescatistaId;
+    document.getElementById('editNombre').value       = nombre;
+    document.getElementById('editCedula').value       = cedula;
+    document.getElementById('modalEditar').classList.remove('hidden');
 }
 
-function mostrarDetalles(idEncuesta) {
-    const encuesta = encuestasGlobales.find(e => e.idEncuesta === idEncuesta);
-    if (!encuesta) return;
+function guardarEdicion() {
+    const id     = document.getElementById('editRescatistaId').value;
+    const nombre = document.getElementById('editNombre').value.trim();
+    const cedula = document.getElementById('editCedula').value.trim();
 
-    const modal = document.getElementById('modalDetalles');
-    const contenido = document.getElementById('detallesContenido');
+    if (!nombre || !cedula) { mostrarToast('Complete todos los campos.', 'red'); return; }
+    if (cedula.length < 10)  { mostrarToast('La cédula debe tener mínimo 10 dígitos.', 'red'); return; }
 
-    let html = `
-        <div class="mb-4 pb-4 border-b border-gray-200">
-            <p><strong>Rescatista:</strong> ${encuesta.rescatista.nombreCodigo}</p>
-            <p><strong>Rango:</strong> ${encuesta.rescatista.rango}</p>
-            <p><strong>Unidad:</strong> ${encuesta.rescatista.unidad}</p>
-            <p><strong>Fecha:</strong> ${new Date(encuesta.fechaHora).toLocaleString('es-CO')}</p>
-            <p><strong>Nivel de Riesgo:</strong> <span class="${obtenerClaseRiesgo(encuesta.nivelRiesgo)} px-2 py-1 rounded">${obtenerColorRiesgo(encuesta.nivelRiesgo).etiqueta}</span></p>
-        </div>
-        <div class="space-y-2">
-    `;
+    document.getElementById('btnGuardarEditar').textContent = 'Guardando...';
 
-    for (let i = 1; i <= 23; i++) {
-        const respuesta = encuesta['respuesta' + i];
-        const escala = ['', 'Nunca', 'Rara vez', 'A veces', 'Frecuentemente', 'Siempre'];
-        html += `
-            <div class="border-b border-gray-100 pb-2">
-                <p><strong>P${i}:</strong> ${preguntas[i-1]}</p>
-                <p class="text-gray-600 ml-4">Respuesta: <strong>${escala[respuesta] || 'N/A'}</strong> (${respuesta}/5)</p>
-            </div>
-        `;
-    }
-
-    html += `</div>`;
-    contenido.innerHTML = html;
-    modal.classList.remove('hidden');
-}
-
-function filtrarTabla() {
-    const busqueda = document.getElementById('busqueda').value.toLowerCase();
-    const filtroRiesgo = document.getElementById('filtroRiesgo').value;
-
-    let filtered = encuestasGlobales.filter(e => {
-        const coincideBusqueda = e.rescatista.nombreCodigo.toLowerCase().includes(busqueda) ||
-                                e.rescatista.rango.toLowerCase().includes(busqueda);
-        const coincideRiesgo = filtroRiesgo === '' || e.nivelRiesgo.toString() === filtroRiesgo;
-        return coincideBusqueda && coincideRiesgo;
+    fetch(`/api/rescatistas/${id}`, {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ nombreCompleto: nombre, cedula })
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('btnGuardarEditar').textContent = 'Guardar cambios';
+        document.getElementById('modalEditar').classList.add('hidden');
+        if (data.success) {
+            mostrarToast('Datos actualizados correctamente ✓', 'green');
+            cargarEncuestas();
+        } else {
+            mostrarToast(data.mensaje || 'Error al actualizar.', 'red');
+        }
+    })
+    .catch(() => {
+        document.getElementById('btnGuardarEditar').textContent = 'Guardar cambios';
+        mostrarToast('Error de conexión.', 'red');
     });
-
-    ordenarTabla(filtered);
 }
 
-function ordenarTabla(encuestas = null) {
-    const orden = document.getElementById('ordenar').value;
-    let data = encuestas || encuestasGlobales;
+/** ELIMINAR → abre modal de confirmación */
+function abrirEliminar(idEncuesta) {
+    document.getElementById('eliminarId').value = idEncuesta;
+    document.getElementById('modalEliminar').classList.remove('hidden');
+}
 
-    if (orden === 'fecha-desc') {
-        data.sort((a, b) => b.fechaHora - a.fechaHora);
-    } else if (orden === 'fecha-asc') {
-        data.sort((a, b) => a.fechaHora - b.fechaHora);
-    } else if (orden === 'riesgo-desc') {
-        data.sort((a, b) => b.nivelRiesgo - a.nivelRiesgo);
-    }
+function confirmarEliminar() {
+    const id = document.getElementById('eliminarId').value;
+    document.getElementById('btnConfirmarEliminar').textContent = 'Eliminando...';
 
-    renderizarTabla(data);
+    fetch(`/api/encuestas/${id}`, { method: 'DELETE' })
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('btnConfirmarEliminar').textContent = 'Sí, eliminar';
+            document.getElementById('modalEliminar').classList.add('hidden');
+            if (data.success) {
+                mostrarToast('Registro eliminado ✓', 'green');
+                cargarEncuestas();
+            } else {
+                mostrarToast(data.mensaje || 'Error al eliminar.', 'red');
+            }
+        })
+        .catch(() => {
+            document.getElementById('btnConfirmarEliminar').textContent = 'Sí, eliminar';
+            mostrarToast('Error de conexión.', 'red');
+        });
+}
+
+// ─── Toast de notificación ───────────────────────────────────────────────────
+
+function mostrarToast(mensaje, color = 'green') {
+    const toast = document.getElementById('toast');
+    toast.textContent = mensaje;
+    toast.className = `fixed bottom-6 right-6 px-5 py-3 rounded-xl text-white font-semibold
+                       shadow-lg z-50 text-sm transition
+                       ${color === 'green' ? 'bg-green-700' : 'bg-red-700'}`;
+    toast.classList.remove('hidden');
+    setTimeout(() => toast.classList.add('hidden'), 3000);
 }

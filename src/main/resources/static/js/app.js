@@ -17,7 +17,7 @@ const preguntas = [
     "Me siento motivado para participar en una nueva operación de rescate.",
     "Siento que el trabajo en emergencias puede afectar mi bienestar emocional.",
     "En este momento siento tranquilidad emocional.",
-    "¿Se le dificulta fue mantener la concentración durante la misión?",
+    "¿Se le dificulta mantener la concentración durante la misión?",
     "¿Se siente afectado(a) emocionalmente por las situaciones observadas durante la misión?",
     "¿En qué medida experimentó preocupación o ansiedad por la seguridad de las víctimas, compañeros o de usted mismo(a)?",
     "Considero útil contar con herramientas tecnológicas que monitoreen el estado psicológico del equipo.",
@@ -25,231 +25,220 @@ const preguntas = [
 ];
 
 const escala = [
-    { valor: 1, etiqueta: "Nunca", color: "bg-green-100 hover:bg-green-200", bordeColor: "border-green-300", textoColor: "text-green-900" },
-    { valor: 2, etiqueta: "Rara vez", color: "bg-green-50 hover:bg-green-100", bordeColor: "border-green-200", textoColor: "text-gray-700" },
-    { valor: 3, etiqueta: "A veces", color: "bg-yellow-100 hover:bg-yellow-200", bordeColor: "border-yellow-300", textoColor: "text-yellow-900" },
-    { valor: 4, etiqueta: "Frecuentemente", color: "bg-orange-100 hover:bg-orange-200", bordeColor: "border-orange-300", textoColor: "text-orange-900" },
-    { valor: 5, etiqueta: "Siempre", color: "bg-red-100 hover:bg-red-200", bordeColor: "border-red-300", textoColor: "text-red-900" }
+    { valor: 1, etiqueta: "Nunca",          bg: "bg-green-100",  hover: "hover:bg-green-200",  borde: "border-green-300",  texto: "text-green-900"  },
+    { valor: 2, etiqueta: "Rara vez",       bg: "bg-green-50",   hover: "hover:bg-green-100",  borde: "border-green-200",  texto: "text-gray-700"   },
+    { valor: 3, etiqueta: "A veces",        bg: "bg-yellow-100", hover: "hover:bg-yellow-200", borde: "border-yellow-300", texto: "text-yellow-900" },
+    { valor: 4, etiqueta: "Frecuentemente", bg: "bg-orange-100", hover: "hover:bg-orange-200", borde: "border-orange-300", texto: "text-orange-900" },
+    { valor: 5, etiqueta: "Siempre",        bg: "bg-red-100",    hover: "hover:bg-red-200",    borde: "border-red-300",    texto: "text-red-900"    }
 ];
 
 let respuestasSeleccionadas = {};
 
-document.addEventListener('DOMContentLoaded', function() {
+// ─── Inicialización ──────────────────────────────────────────────────────────
+
+document.addEventListener('DOMContentLoaded', function () {
     generarPreguntas();
     configurarEventos();
 });
+
+// ─── Genera las 23 preguntas con tarjetas de respuesta ───────────────────────
 
 function generarPreguntas() {
     const container = document.getElementById('preguntasContainer');
     container.innerHTML = '';
 
     preguntas.forEach((pregunta, index) => {
-        const numPregunta = index + 1;
-        const divPregunta = document.createElement('div');
-        divPregunta.className = 'bg-white border-l-4 border-green-700 p-6 rounded-lg shadow-md hover:shadow-lg transition';
-        divPregunta.id = `pregunta-${numPregunta}`;
+        const num = index + 1;
+        const div = document.createElement('div');
+        div.className = 'bg-white border-l-4 border-green-700 p-5 rounded-xl shadow-sm hover:shadow-md transition';
+        div.id = `pregunta-${num}`;
 
         let html = `
-            <div class="mb-4">
-                <label class="block text-gray-800 font-semibold mb-2">
-                    <span class="text-green-700 font-bold">${numPregunta}.</span> ${pregunta}
-                </label>
-                <p class="text-xs text-gray-500 mb-3">Seleccione una opción:</p>
-            </div>
+            <p class="text-gray-800 font-semibold mb-3 text-sm sm:text-base">
+                <span class="text-green-700 font-bold">${num}.</span> ${pregunta}
+            </p>
             <div class="grid grid-cols-5 gap-2">
         `;
 
-        escala.forEach((opcion) => {
-            const inputId = `r${numPregunta}_${opcion.valor}`;
+        escala.forEach(op => {
             html += `
-                <label class="cursor-pointer">
-                    <input type="radio" name="respuesta${numPregunta}" value="${opcion.valor}" class="hidden respuesta-radio" data-pregunta="${numPregunta}">
-                    <div class="p-3 rounded-lg border-2 transition text-center ${opcion.color} ${opcion.bordeColor} hover:scale-105 transform" id="${inputId}">
-                        <div class="font-bold text-lg">${opcion.valor}</div>
-                        <div class="text-xs font-semibold">${opcion.etiqueta}</div>
+                <label class="cursor-pointer select-none">
+                    <input type="radio" name="resp${num}" value="${op.valor}"
+                           class="hidden respuesta-radio" data-pregunta="${num}">
+                    <div id="r${num}_${op.valor}"
+                         class="${op.bg} ${op.hover} ${op.borde} border-2 rounded-xl p-2 sm:p-3
+                                text-center transition transform hover:scale-105">
+                        <div class="font-bold text-base sm:text-lg ${op.texto}">${op.valor}</div>
+                        <div class="text-xs font-medium ${op.texto} hidden sm:block">${op.etiqueta}</div>
                     </div>
                 </label>
             `;
         });
 
         html += `</div>`;
-        divPregunta.innerHTML = html;
-        container.appendChild(divPregunta);
+        div.innerHTML = html;
+        container.appendChild(div);
 
-        // Event listeners para cada opción
-        const radios = divPregunta.querySelectorAll('input[type="radio"]');
-        radios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                respuestasSeleccionadas[numPregunta] = parseInt(this.value);
+        div.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                respuestasSeleccionadas[num] = parseInt(this.value);
                 actualizarProgreso();
-                actualizarVisualPregunta(numPregunta);
+                marcarSeleccionada(num, parseInt(this.value));
             });
         });
     });
 }
 
-function actualizarVisualPregunta(numPregunta) {
-    const pregunta = document.getElementById(`pregunta-${numPregunta}`);
-    if (!pregunta) return;
-
-    pregunta.querySelectorAll('.border-2').forEach(div => {
-        div.classList.remove('ring-4', 'ring-green-700', 'scale-105', 'shadow-lg');
-    });
-
-    const respuesta = respuestasSeleccionadas[numPregunta];
-    if (respuesta) {
-        const selected = document.getElementById(`r${numPregunta}_${respuesta}`);
-        if (selected) {
-            selected.classList.add('ring-4', 'ring-green-700', 'scale-105', 'shadow-lg');
-        }
+function marcarSeleccionada(num, valor) {
+    for (let v = 1; v <= 5; v++) {
+        const card = document.getElementById(`r${num}_${v}`);
+        if (!card) continue;
+        card.classList.remove('ring-4', 'ring-green-700', 'ring-offset-2', 'opacity-50');
+        if (v !== valor) card.classList.add('opacity-50');
+    }
+    const selected = document.getElementById(`r${num}_${valor}`);
+    if (selected) {
+        selected.classList.remove('opacity-50');
+        selected.classList.add('ring-4', 'ring-green-700', 'ring-offset-2');
     }
 }
 
 function actualizarProgreso() {
-    const total = preguntas.length;
+    const total       = preguntas.length;
     const respondidas = Object.keys(respuestasSeleccionadas).length;
-    const porcentaje = Math.round((respondidas / total) * 100);
-
-    document.getElementById('progreso').textContent = respondidas;
-    document.getElementById('porcentaje').textContent = porcentaje + '%';
-    document.getElementById('barraProgreso').style.width = porcentaje + '%';
+    const pct         = Math.round((respondidas / total) * 100);
+    document.getElementById('progreso').textContent     = respondidas;
+    document.getElementById('porcentaje').textContent   = pct + '%';
+    document.getElementById('barraProgreso').style.width = pct + '%';
 }
 
+// ─── Eventos ─────────────────────────────────────────────────────────────────
+
 function configurarEventos() {
-    const form = document.getElementById('encuestaForm');
-    const btnEnviar = document.getElementById('btnEnviar');
-    const modalConfirmacion = document.getElementById('modalConfirmacion');
-    const btnConfirmar = document.getElementById('btnConfirmar');
-    const btnCancelar = document.getElementById('btnCancelar');
-    const btnNueva = document.getElementById('btnNueva');
-    const btnCerrarError = document.getElementById('btnCerrarError');
+    const modalConf  = document.getElementById('modalConfirmacion');
+    const modalExito = document.getElementById('modalExito');
+    const modalError = document.getElementById('modalError');
 
-    btnEnviar.addEventListener('click', function(e) {
-        e.preventDefault();
-        
-        if (!validarFormulario()) {
-            return;
-        }
-
-        modalConfirmacion.classList.remove('hidden');
+    // Botón Enviar → abre modal confirmación
+    document.getElementById('btnEnviar').addEventListener('click', function () {
+        if (!validarFormulario()) return;
+        modalConf.classList.remove('hidden');
     });
 
-    btnConfirmar.addEventListener('click', enviarEncuesta);
-    
-    btnCancelar.addEventListener('click', function() {
-        modalConfirmacion.classList.add('hidden');
+    // Botón Cancelar → cierra modal
+    document.getElementById('btnCancelar').addEventListener('click', function () {
+        modalConf.classList.add('hidden');
     });
 
-    btnNueva.addEventListener('click', function() {
-        document.getElementById('modalExito').classList.add('hidden');
-        form.reset();
+    // ──────────────────────────────────────────────────────────────────────────
+    // BOTÓN CONFIRMAR — aquí estaba el bug principal
+    // Se separó en su propio listener para evitar conflictos con el overlay
+    // ──────────────────────────────────────────────────────────────────────────
+    document.getElementById('btnConfirmar').addEventListener('click', function (e) {
+        e.stopPropagation(); // evita que el clic suba al overlay
+        enviarEncuesta();
+    });
+
+    // Botón Nueva encuesta
+    document.getElementById('btnNueva').addEventListener('click', function () {
+        modalExito.classList.add('hidden');
+        document.getElementById('encuestaForm').reset();
         respuestasSeleccionadas = {};
         generarPreguntas();
         actualizarProgreso();
-        window.scrollTo(0, 0);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    btnCerrarError.addEventListener('click', function() {
-        document.getElementById('modalError').classList.add('hidden');
-    });
-
-    // Cerrar modal al hacer clic fuera
-    document.addEventListener('click', function(e) {
-        if (e.target.id === 'modalConfirmacion') {
-            modalConfirmacion.classList.add('hidden');
-        }
+    // Botón cerrar error
+    document.getElementById('btnCerrarError').addEventListener('click', function () {
+        modalError.classList.add('hidden');
     });
 }
 
+// ─── Validación ───────────────────────────────────────────────────────────────
+
 function validarFormulario() {
-    const nombreCodigo = document.getElementById('nombreCodigo').value.trim();
-    const rango = document.getElementById('rango').value;
-    const unidad = document.getElementById('unidad').value.trim();
+    const nombre = document.getElementById('nombreCompleto').value.trim();
+    const cedula = document.getElementById('cedula').value.trim();
 
-    if (!nombreCodigo) {
-        mostrarError("Por favor ingrese su nombre o código");
+    if (!nombre) {
+        mostrarError('Por favor ingrese su nombre completo.');
         return false;
     }
-
-    if (!rango) {
-        mostrarError("Por favor seleccione su rango militar");
+    if (!/^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]+$/.test(nombre)) {
+        mostrarError('El nombre solo debe contener letras y espacios.');
         return false;
     }
-
-    if (!unidad) {
-        mostrarError("Por favor ingrese su unidad");
+    if (!cedula) {
+        mostrarError('Por favor ingrese su cédula de ciudadanía.');
         return false;
     }
-
+    if (!/^\d+$/.test(cedula)) {
+        mostrarError('La cédula solo debe contener números.');
+        return false;
+    }
+    if (cedula.length < 10) {
+        mostrarError('La cédula debe tener mínimo 10 dígitos.');
+        return false;
+    }
     if (Object.keys(respuestasSeleccionadas).length !== preguntas.length) {
-        mostrarError("Por favor responda todas las preguntas antes de enviar");
+        mostrarError(`Por favor responda todas las preguntas. Lleva ${Object.keys(respuestasSeleccionadas).length} de ${preguntas.length}.`);
         return false;
     }
-
     return true;
 }
 
+// ─── Envío al backend ────────────────────────────────────────────────────────
+
 function enviarEncuesta() {
-    const nombreCodigo = document.getElementById('nombreCodigo').value.trim();
-    const rango = document.getElementById('rango').value;
-    const unidad = document.getElementById('unidad').value.trim();
+    const btnConfirmar = document.getElementById('btnConfirmar');
+    const modalConf    = document.getElementById('modalConfirmacion');
+
+    // Estado de carga
+    btnConfirmar.disabled    = true;
+    btnConfirmar.textContent = '⏳ Enviando...';
 
     const respuestas = [];
     for (let i = 1; i <= preguntas.length; i++) {
         respuestas.push(respuestasSeleccionadas[i] || 0);
     }
 
-    const datos = {
-        nombreCodigo: nombreCodigo,
-        rango: rango,
-        unidad: unidad,
-        respuestas: respuestas
+    const payload = {
+        nombreCompleto: document.getElementById('nombreCompleto').value.trim(),
+        cedula:         document.getElementById('cedula').value.trim(),
+        respuestas:     respuestas
     };
 
     fetch('/api/enviar-encuesta', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(datos)
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload)
     })
-    .then(response => response.json())
+    .then(res => res.json())
     .then(data => {
-        document.getElementById('modalConfirmacion').classList.add('hidden');
-        
+        modalConf.classList.add('hidden');
+        btnConfirmar.disabled    = false;
+        btnConfirmar.textContent = 'Confirmar';
+
         if (data.success) {
-            mostrarExito(data.nivelRiesgo, data.etiquetaRiesgo);
+            // ✅ El usuario NO ve el nivel de riesgo — solo ve confirmación genérica
+            document.getElementById('modalExito').classList.remove('hidden');
         } else {
-            mostrarError(data.mensaje);
+            mostrarError(data.mensaje || 'Error desconocido al guardar la encuesta.');
         }
     })
-    .catch(error => {
-        document.getElementById('modalConfirmacion').classList.add('hidden');
-        mostrarError("Error al enviar la encuesta: " + error.message);
-        console.error('Error:', error);
+    .catch(err => {
+        modalConf.classList.add('hidden');
+        btnConfirmar.disabled    = false;
+        btnConfirmar.textContent = 'Confirmar';
+        mostrarError('No se pudo conectar con el servidor. Verifique su conexión e intente de nuevo.\n\nDetalle: ' + err.message);
+        console.error('Error fetch:', err);
     });
 }
 
-function mostrarExito(nivelRiesgo, etiqueta) {
-    const modalExito = document.getElementById('modalExito');
-    const textoRiesgo = document.getElementById('nivelRiesgoTexto');
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-    const mensajes = {
-        1: "Nivel de Riesgo: MÍNIMO ✅ - Continúe con sus operaciones",
-        2: "Nivel de Riesgo: BAJO ⚠️ - Monitoreo recomendado",
-        3: "Nivel de Riesgo: MEDIO 🟠 - Requiere atención",
-        4: "Nivel de Riesgo: ALTO 🔴 - Contactar psicólogo",
-        5: "Nivel de Riesgo: CRÍTICO 🚨 - Intervención inmediata"
-    };
-
-    textoRiesgo.textContent = mensajes[nivelRiesgo] || "Nivel desconocido";
-    textoRiesgo.className = 'text-lg font-semibold mb-6 ' + (nivelRiesgo >= 3 ? 'text-red-600' : 'text-green-600');
-    
-    modalExito.classList.remove('hidden');
-}
-
-function mostrarError(mensaje) {
-    const modalError = document.getElementById('modalError');
-    document.getElementById('mensajeError').textContent = mensaje;
-    modalError.classList.remove('hidden');
+function mostrarError(msg) {
+    document.getElementById('mensajeError').textContent = msg;
+    document.getElementById('modalError').classList.remove('hidden');
 }

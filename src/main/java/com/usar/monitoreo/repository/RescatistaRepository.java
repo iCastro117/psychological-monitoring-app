@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface RescatistaRepository extends JpaRepository<Rescatista, Long> {
-    Optional<Rescatista> findByNombreCodigo(String nombreCodigo);
+    Optional<Rescatista> findByCedula(String cedula);
 }
