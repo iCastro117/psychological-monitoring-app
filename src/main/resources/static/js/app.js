@@ -33,15 +33,18 @@ const escala = [
 ];
 
 let respuestasSeleccionadas = {};
+let cedulaDuplicada = false;    // true si el backend dice que la cédula ya existe
+let cedulaTimer     = null;     // timeout para la validación de min-10 dígitos
 
 // ─── Inicialización ──────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', function () {
     generarPreguntas();
     configurarEventos();
+    configurarValidacionCedula();
 });
 
-// ─── Genera las 23 preguntas con tarjetas de respuesta ───────────────────────
+// ─── Genera las 23 preguntas ─────────────────────────────────────────────────
 
 function generarPreguntas() {
     const container = document.getElementById('preguntasContainer');
@@ -57,8 +60,7 @@ function generarPreguntas() {
             <p class="text-gray-800 font-semibold mb-3 text-sm sm:text-base">
                 <span class="text-green-700 font-bold">${num}.</span> ${pregunta}
             </p>
-            <div class="grid grid-cols-5 gap-2">
-        `;
+            <div class="grid grid-cols-5 gap-2">`;
 
         escala.forEach(op => {
             html += `
@@ -71,8 +73,7 @@ function generarPreguntas() {
                         <div class="font-bold text-base sm:text-lg ${op.texto}">${op.valor}</div>
                         <div class="text-xs font-medium ${op.texto} hidden sm:block">${op.etiqueta}</div>
                     </div>
-                </label>
-            `;
+                </label>`;
         });
 
         html += `</div>`;
@@ -107,55 +108,147 @@ function actualizarProgreso() {
     const total       = preguntas.length;
     const respondidas = Object.keys(respuestasSeleccionadas).length;
     const pct         = Math.round((respondidas / total) * 100);
-    document.getElementById('progreso').textContent     = respondidas;
-    document.getElementById('porcentaje').textContent   = pct + '%';
+    document.getElementById('progreso').textContent      = respondidas;
+    document.getElementById('porcentaje').textContent    = pct + '%';
     document.getElementById('barraProgreso').style.width = pct + '%';
 }
 
-// ─── Eventos ─────────────────────────────────────────────────────────────────
+// ─── Validación inline de cédula ─────────────────────────────────────────────
+// Solicitud: error aparece EN EL MISMO CAMPO (borde rojo + texto chiquito debajo)
+// SIN popup. El popup solo se usa para otras validaciones.
+
+function configurarValidacionCedula() {
+    const inputCedula = document.getElementById('cedula');
+
+    // Mientras escribe: timer de 2 segundos para validar longitud mínima
+    inputCedula.addEventListener('input', function () {
+        clearTimeout(cedulaTimer);
+        limpiarErrorCedulaInline();
+
+        const val = this.value.trim();
+
+        if (val.length === 0) return;
+
+        // Arranca un timer: si después de 2 s aún hay menos de 10 dígitos → error inline
+        cedulaTimer = setTimeout(() => {
+            if (val.length > 0 && val.length < 10) {
+                mostrarErrorCedulaInline('Mínimo 10 números requeridos');
+            }
+        }, 2000);
+    });
+
+    // Al salir del campo: verifica si la cédula ya está registrada
+    inputCedula.addEventListener('blur', function () {
+        clearTimeout(cedulaTimer);
+        const val = this.value.trim();
+
+        if (val.length === 0) return;
+
+        // Primero valida longitud
+        if (val.length < 10) {
+            mostrarErrorCedulaInline('Mínimo 10 números requeridos');
+            return;
+        }
+
+        // Luego consulta el backend si ya existe
+        verificarCedulaDuplicada(val);
+    });
+
+    // Si el usuario vuelve a editar, limpia el estado
+    inputCedula.addEventListener('focus', function () {
+        // Solo limpia el error de duplicado, no el de longitud
+        if (cedulaDuplicada) {
+            limpiarErrorCedulaInline();
+        }
+    });
+}
+
+function verificarCedulaDuplicada(cedula) {
+    const indicador = document.getElementById('cedulaIndicador');
+    indicador.textContent = '🔍 Verificando...';
+    indicador.className   = 'text-xs text-gray-400 mt-1 min-h-[1rem]';
+
+    fetch(`/api/cedula-existe/${cedula}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.existe) {
+                cedulaDuplicada = true;
+                mostrarErrorCedulaInline('Esta cédula ya fue registrada en el sistema');
+            } else {
+                cedulaDuplicada = false;
+                indicador.textContent = '✓ Cédula disponible';
+                indicador.className   = 'text-xs text-green-600 mt-1 font-medium min-h-[1rem]';
+            }
+        })
+        .catch(() => {
+            // Si falla la red, no bloquea (se validará en el servidor de todas formas)
+            cedulaDuplicada = false;
+            indicador.textContent = '';
+        });
+}
+
+function mostrarErrorCedulaInline(msg) {
+    const input   = document.getElementById('cedula');
+    const errorEl = document.getElementById('cedulaError');
+    const ind     = document.getElementById('cedulaIndicador');
+
+    input.classList.remove('border-gray-300');
+    input.classList.add('border-red-500');
+    errorEl.textContent = msg;
+    errorEl.classList.remove('hidden');
+    ind.textContent = '';
+}
+
+function limpiarErrorCedulaInline() {
+    const input   = document.getElementById('cedula');
+    const errorEl = document.getElementById('cedulaError');
+    const ind     = document.getElementById('cedulaIndicador');
+
+    input.classList.remove('border-red-500');
+    input.classList.add('border-gray-300');
+    errorEl.classList.add('hidden');
+    errorEl.textContent = '';
+    cedulaDuplicada = false;
+    ind.textContent = '';
+}
+
+// ─── Eventos de los modales ───────────────────────────────────────────────────
 
 function configurarEventos() {
     const modalConf  = document.getElementById('modalConfirmacion');
     const modalExito = document.getElementById('modalExito');
     const modalError = document.getElementById('modalError');
 
-    // Botón Enviar → abre modal confirmación
     document.getElementById('btnEnviar').addEventListener('click', function () {
         if (!validarFormulario()) return;
         modalConf.classList.remove('hidden');
     });
 
-    // Botón Cancelar → cierra modal
     document.getElementById('btnCancelar').addEventListener('click', function () {
         modalConf.classList.add('hidden');
     });
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // BOTÓN CONFIRMAR — aquí estaba el bug principal
-    // Se separó en su propio listener para evitar conflictos con el overlay
-    // ──────────────────────────────────────────────────────────────────────────
     document.getElementById('btnConfirmar').addEventListener('click', function (e) {
-        e.stopPropagation(); // evita que el clic suba al overlay
+        e.stopPropagation();
         enviarEncuesta();
     });
 
-    // Botón Nueva encuesta
     document.getElementById('btnNueva').addEventListener('click', function () {
         modalExito.classList.add('hidden');
         document.getElementById('encuestaForm').reset();
         respuestasSeleccionadas = {};
+        limpiarErrorCedulaInline();
         generarPreguntas();
         actualizarProgreso();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // Botón cerrar error
     document.getElementById('btnCerrarError').addEventListener('click', function () {
         modalError.classList.add('hidden');
     });
 }
 
-// ─── Validación ───────────────────────────────────────────────────────────────
+// ─── Validación antes de mostrar modal de confirmación ───────────────────────
 
 function validarFormulario() {
     const nombre = document.getElementById('nombreCompleto').value.trim();
@@ -173,12 +266,16 @@ function validarFormulario() {
         mostrarError('Por favor ingrese su cédula de ciudadanía.');
         return false;
     }
-    if (!/^\d+$/.test(cedula)) {
-        mostrarError('La cédula solo debe contener números.');
+    if (cedula.length < 10) {
+        // Error de longitud: se muestra inline (no popup)
+        mostrarErrorCedulaInline('Mínimo 10 números requeridos');
+        document.getElementById('cedula').focus();
         return false;
     }
-    if (cedula.length < 10) {
-        mostrarError('La cédula debe tener mínimo 10 dígitos.');
+    if (cedulaDuplicada) {
+        // Error de duplicado: se muestra inline (no popup)
+        mostrarErrorCedulaInline('Esta cédula ya fue registrada en el sistema');
+        document.getElementById('cedula').focus();
         return false;
     }
     if (Object.keys(respuestasSeleccionadas).length !== preguntas.length) {
@@ -194,7 +291,6 @@ function enviarEncuesta() {
     const btnConfirmar = document.getElementById('btnConfirmar');
     const modalConf    = document.getElementById('modalConfirmacion');
 
-    // Estado de carga
     btnConfirmar.disabled    = true;
     btnConfirmar.textContent = '⏳ Enviando...';
 
@@ -206,7 +302,7 @@ function enviarEncuesta() {
     const payload = {
         nombreCompleto: document.getElementById('nombreCompleto').value.trim(),
         cedula:         document.getElementById('cedula').value.trim(),
-        respuestas:     respuestas
+        respuestas
     };
 
     fetch('/api/enviar-encuesta', {
@@ -221,7 +317,6 @@ function enviarEncuesta() {
         btnConfirmar.textContent = 'Confirmar';
 
         if (data.success) {
-            // ✅ El usuario NO ve el nivel de riesgo — solo ve confirmación genérica
             document.getElementById('modalExito').classList.remove('hidden');
         } else {
             mostrarError(data.mensaje || 'Error desconocido al guardar la encuesta.');
@@ -231,12 +326,12 @@ function enviarEncuesta() {
         modalConf.classList.add('hidden');
         btnConfirmar.disabled    = false;
         btnConfirmar.textContent = 'Confirmar';
-        mostrarError('No se pudo conectar con el servidor. Verifique su conexión e intente de nuevo.\n\nDetalle: ' + err.message);
+        mostrarError('No se pudo conectar con el servidor. Verifique su conexión e intente de nuevo.');
         console.error('Error fetch:', err);
     });
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Helper popup de error general ───────────────────────────────────────────
 
 function mostrarError(msg) {
     document.getElementById('mensajeError').textContent = msg;

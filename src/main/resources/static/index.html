@@ -9,14 +9,28 @@
 <body class="bg-white">
 <div class="min-h-screen flex flex-col">
 
-  <!-- Header -->
-  <header class="bg-gradient-to-r from-green-900 to-green-800 text-white py-6 shadow-lg">
-    <div class="max-w-4xl mx-auto px-4 flex items-center justify-between">
-      <div>
-        <h1 class="text-3xl font-bold">🚨 USAR COL-13</h1>
-        <p class="text-green-100 mt-1 text-sm">Sistema de Monitoreo Psicológico</p>
+  <!-- ═══════════════════════════════════════════════════════════════
+       HEADER — Logo a la izquierda
+       Para usar tu logo real: coloca el archivo en
+       src/main/resources/static/img/logo.png
+       y cambia el texto "USAR" del div placeholder por la etiqueta img
+  ═══════════════════════════════════════════════════════════════════ -->
+  <header class="bg-gradient-to-r from-green-900 to-green-800 text-white py-5 shadow-lg">
+    <div class="max-w-4xl mx-auto px-4 flex items-center gap-4">
+
+      <!-- LOGO: reemplaza este div por <img src="/img/logo.png" class="h-12 w-12 object-contain rounded-full border-2 border-white"> cuando tengas el archivo -->
+      <div class="h-12 w-12 rounded-full bg-white flex items-center justify-center flex-shrink-0 border-2 border-green-300 overflow-hidden">
+        <img src="/img/logo.png" alt="Logo USAR COL-13"
+             class="h-full w-full object-cover"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+        <span style="display:none" class="font-bold text-green-800 text-xs w-full h-full items-center justify-center">USAR</span>
       </div>
-      <a href="/dashboard" class="text-sm underline text-green-200 hover:text-white">Ver panel →</a>
+
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-bold">USAR COL-13</h1>
+        <p class="text-green-100 mt-0.5 text-xs sm:text-sm">Sistema de Monitoreo Psicológico</p>
+      </div>
+      <!-- Sin enlace al dashboard — los usuarios no deben tener acceso -->
     </div>
   </header>
 
@@ -37,12 +51,12 @@
 
   <!-- Formulario -->
   <main class="flex-1 max-w-4xl mx-auto w-full px-4 py-8">
-    <form id="encuestaForm" novalidate class="space-y-8">
+    <form id="encuestaForm" novalidate class="space-y-6">
 
-      <!-- Sección de datos personales -->
+      <!-- Datos personales -->
       <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm">
         <h2 class="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2">
-          <span class="w-8 h-8 bg-green-800 text-white rounded-full flex items-center justify-center text-sm">👤</span>
+          <span class="w-8 h-8 bg-green-800 text-white rounded-full flex items-center justify-center text-sm flex-shrink-0">👤</span>
           Por favor ingrese sus datos personales
         </h2>
 
@@ -51,31 +65,24 @@
           <!-- Nombre Completo -->
           <div>
             <label class="block text-sm font-semibold text-gray-800 mb-1">
-              Nombre Completo
-              <span class="text-red-600 font-bold ml-0.5">*</span>
+              Nombre Completo <span class="text-red-600 font-bold">*</span>
             </label>
-            <input
-              type="text"
-              id="nombreCompleto"
+            <input type="text" id="nombreCompleto"
               placeholder="Ej: Juan Pérez García"
               autocomplete="off"
               class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg
                      focus:outline-none focus:border-green-700 transition text-gray-900"
               oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]/g, '')"
-              onkeypress="return /[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]/.test(event.key)"
-            >
+              onkeypress="return /[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]/.test(event.key)">
             <p class="text-xs text-gray-400 mt-1">Solo letras y espacios</p>
           </div>
 
           <!-- Cédula de Ciudadanía -->
           <div>
             <label class="block text-sm font-semibold text-gray-800 mb-1">
-              Cédula de Ciudadanía
-              <span class="text-red-600 font-bold ml-0.5">*</span>
+              Cédula de Ciudadanía <span class="text-red-600 font-bold">*</span>
             </label>
-            <input
-              type="text"
-              id="cedula"
+            <input type="text" id="cedula"
               inputmode="numeric"
               placeholder="Ej: 1023456789"
               maxlength="15"
@@ -83,24 +90,42 @@
               class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg
                      focus:outline-none focus:border-green-700 transition text-gray-900"
               oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-              onkeypress="return /[0-9]/.test(event.key)"
-            >
-            <p class="text-xs text-gray-400 mt-1">Solo números, mínimo 10 dígitos</p>
+              onkeypress="return /[0-9]/.test(event.key)">
+            <!-- Mensaje de error inline (debajo del campo, en rojo, chiquito) -->
+            <p id="cedulaError" class="hidden text-xs text-red-500 mt-1 font-medium"></p>
+            <!-- Indicador de disponibilidad / duplicado -->
+            <p id="cedulaIndicador" class="text-xs text-gray-400 mt-1 min-h-[1rem]"></p>
           </div>
 
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════
+           DESCRIPCIÓN ANTES DE LAS 23 PREGUNTAS
+      ════════════════════════════════════════════════════════ -->
+      <div class="bg-green-50 border border-green-200 rounded-xl px-5 py-4 flex gap-3 items-start">
+        <span class="text-2xl flex-shrink-0">📋</span>
+        <div>
+          <p class="text-sm font-bold text-green-900 mb-1">Instrucciones</p>
+          <p class="text-sm text-green-800 leading-relaxed">
+            A continuación encontrará <strong>23 preguntas</strong> relacionadas con su bienestar
+            emocional y estado psicológico. Por favor léalas detenidamente y responda con la opción
+            que mejor describa cómo se ha sentido recientemente. Sus respuestas son
+            <strong>confidenciales</strong>.
+          </p>
         </div>
       </div>
 
       <!-- Escala de referencia -->
       <div class="flex flex-wrap gap-2 text-xs">
         <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full font-semibold">1 = Nunca</span>
-        <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full font-semibold">2 = Rara vez</span>
+        <span class="bg-green-50 border border-green-200 text-green-700 px-3 py-1 rounded-full font-semibold">2 = Rara vez</span>
         <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full font-semibold">3 = A veces</span>
         <span class="bg-orange-100 text-orange-800 px-3 py-1 rounded-full font-semibold">4 = Frecuentemente</span>
         <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full font-semibold">5 = Siempre</span>
       </div>
 
-      <!-- Preguntas -->
+      <!-- Preguntas generadas por app.js -->
       <div id="preguntasContainer" class="space-y-5"></div>
 
       <!-- Botón enviar -->
@@ -120,7 +145,7 @@
   </footer>
 </div>
 
-<!-- Modal de Confirmación -->
+<!-- Modal Confirmación -->
 <div id="modalConfirmacion" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
   <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
     <h3 class="text-xl font-bold text-gray-800 mb-3">Confirmar envío</h3>
@@ -139,7 +164,7 @@
   </div>
 </div>
 
-<!-- Modal de Éxito -->
+<!-- Modal Éxito -->
 <div id="modalExito" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
   <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl text-center">
     <div class="text-6xl mb-4">✅</div>
@@ -150,16 +175,16 @@
     </p>
     <button id="btnNueva"
       class="px-8 py-2.5 bg-green-800 text-white rounded-xl hover:bg-green-900 font-semibold transition">
-      Nueva encuesta
+      Aceptar
     </button>
   </div>
 </div>
 
-<!-- Modal de Error -->
+<!-- Modal Error -->
 <div id="modalError" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
   <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl text-center">
     <div class="text-6xl mb-4">❌</div>
-    <h3 class="text-2xl font-bold text-red-700 mb-3">Error al enviar</h3>
+    <h3 class="text-2xl font-bold text-red-700 mb-3">Error</h3>
     <p id="mensajeError" class="text-gray-600 mb-6"></p>
     <button id="btnCerrarError"
       class="px-8 py-2.5 bg-red-700 text-white rounded-xl hover:bg-red-800 font-semibold transition">

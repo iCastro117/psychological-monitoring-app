@@ -31,11 +31,20 @@ public class WebController {
     @GetMapping("/dashboard")
     public String dashboard() { return "forward:/dashboard.html"; }
 
-    /** Panel 3: perfil individual del rescatista */
     @GetMapping("/perfil")
     public String perfil() { return "forward:/perfil.html"; }
 
     // ─── API REST ──────────────────────────────────────────────────────────────
+
+    /** Verifica si una cédula ya está registrada en el sistema */
+    @GetMapping("/api/cedula-existe/{cedula}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> cedulaExiste(@PathVariable String cedula) {
+        boolean existe = rescatistaRepository.findByCedula(cedula).isPresent();
+        Map<String, Object> r = new HashMap<>();
+        r.put("existe", existe);
+        return ResponseEntity.ok(r);
+    }
 
     /** Recibe y guarda una encuesta */
     @PostMapping("/api/enviar-encuesta")
@@ -54,6 +63,10 @@ public class WebController {
                 return errorResponse("La cédula es obligatoria.");
             if (respuestasLista == null || respuestasLista.size() != 23)
                 return errorResponse("Debe responder las 23 preguntas.");
+
+            // Bloquear si la cédula ya existe
+            if (rescatistaRepository.findByCedula(cedula).isPresent())
+                return errorResponse("Esta cédula ya fue registrada anteriormente.");
 
             int[] respuestas = new int[23];
             for (int i = 0; i < 23; i++) {
@@ -78,14 +91,14 @@ public class WebController {
         }
     }
 
-    /** Lista todas las encuestas (Panel 2 — Dashboard) */
+    /** Lista todas las encuestas */
     @GetMapping("/api/encuestas")
     @ResponseBody
     public ResponseEntity<List<Encuesta>> obtenerEncuestas() {
         return ResponseEntity.ok(encuestaService.obtenerTodasLasEncuestas());
     }
 
-    /** Detalle de una encuesta (Panel 3 — Perfil) */
+    /** Detalle de una encuesta — ahora devuelve respuesta1-23 gracias a @JsonAutoDetect */
     @GetMapping("/api/encuestas/{id}")
     @ResponseBody
     public ResponseEntity<Encuesta> obtenerEncuesta(@PathVariable Long id) {
@@ -111,7 +124,7 @@ public class WebController {
         }
     }
 
-    /** Edita nombre y cédula del rescatista asociado */
+    /** Edita nombre y cédula del rescatista */
     @PutMapping("/api/rescatistas/{id}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> actualizarRescatista(
@@ -125,10 +138,8 @@ public class WebController {
             String nuevoNombre = (String) datos.get("nombreCompleto");
             String nuevaCedula = (String) datos.get("cedula");
 
-            if (nuevoNombre != null && !nuevoNombre.isBlank())
-                r.setNombreCompleto(nuevoNombre);
-            if (nuevaCedula != null && !nuevaCedula.isBlank())
-                r.setCedula(nuevaCedula);
+            if (nuevoNombre != null && !nuevoNombre.isBlank()) r.setNombreCompleto(nuevoNombre);
+            if (nuevaCedula != null && !nuevaCedula.isBlank()) r.setCedula(nuevaCedula);
 
             rescatistaRepository.save(r);
             Map<String, Object> response = new HashMap<>();
@@ -147,7 +158,6 @@ public class WebController {
         return ResponseEntity.ok(encuestaService.obtenerAlertasRiesgo());
     }
 
-    // ─── Helper ────────────────────────────────────────────────────────────────
     private ResponseEntity<Map<String, Object>> errorResponse(String mensaje) {
         Map<String, Object> r = new HashMap<>();
         r.put("success", false);
