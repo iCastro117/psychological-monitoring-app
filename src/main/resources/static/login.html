@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acceso — Dashboard USAR COL-13</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+<div class="min-h-screen flex items-center justify-center px-4">
+
+  <div class="max-w-sm w-full">
+
+    <!-- Logo / encabezado -->
+    <div class="text-center mb-6">
+      <div class="h-16 w-16 rounded-full bg-white flex items-center justify-center mx-auto border-2 border-green-300 overflow-hidden shadow-sm">
+        <img src="/img/logo.png" alt="Logo USAR COL-13"
+             class="h-full w-full object-cover"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+        <span style="display:none" class="font-bold text-green-800 text-xs w-full h-full items-center justify-center text-center leading-tight px-1">USAR</span>
+      </div>
+      <h1 class="text-xl font-bold text-gray-800 mt-3">Acceso al Dashboard</h1>
+      <p class="text-sm text-gray-500 mt-1">USAR COL-13 — Monitoreo Psicológico</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-md p-6">
+
+      <!-- ═══════ PASO 1: EMAIL ═══════ -->
+      <div id="pasoEmail">
+        <label class="block text-sm font-semibold text-gray-800 mb-1">Correo institucional</label>
+        <input type="email" id="emailInput"
+          placeholder="nombre@gmail.com"
+          autocomplete="off"
+          class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg
+                 focus:outline-none focus:border-green-700 transition text-gray-900 text-sm">
+        <p id="emailError" class="hidden text-xs text-red-500 mt-1 font-medium"></p>
+
+        <button id="btnSolicitarCodigo"
+          class="w-full mt-4 px-4 py-2.5 bg-green-800 hover:bg-green-900 text-white
+                 rounded-lg font-bold text-sm transition">
+          Enviar código
+        </button>
+      </div>
+
+      <!-- ═══════ PASO 2: CÓDIGO (oculto hasta validar email) ═══════ -->
+      <div id="pasoCodigo" class="hidden">
+        <div class="flex items-center justify-between mb-1">
+          <label class="block text-sm font-semibold text-gray-800">Código de verificación</label>
+          <button id="btnCambiarEmail" class="text-xs text-green-700 underline">cambiar correo</button>
+        </div>
+        <p class="text-xs text-gray-400 mb-3">
+          Enviamos un código de 4 dígitos a <span id="emailMostrado" class="font-semibold text-gray-600"></span>
+        </p>
+
+        <input type="text" id="codigoInput"
+          inputmode="numeric" maxlength="4"
+          placeholder="0000"
+          autocomplete="off"
+          class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg
+                 focus:outline-none focus:border-green-700 transition text-gray-900
+                 text-center text-2xl tracking-[0.5em] font-bold"
+          oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+        <p id="codigoError" class="hidden text-xs text-red-500 mt-1 font-medium"></p>
+
+        <button id="btnVerificarCodigo"
+          class="w-full mt-4 px-4 py-2.5 bg-green-800 hover:bg-green-900 text-white
+                 rounded-lg font-bold text-sm transition">
+          Verificar e ingresar
+        </button>
+
+        <button id="btnReenviar"
+          class="w-full mt-2 px-4 py-2 text-green-700 hover:text-green-900
+                 text-xs font-semibold transition">
+          ¿No recibió el código? Reenviar
+        </button>
+      </div>
+
+    </div>
+
+    <p class="text-center text-xs text-gray-400 mt-5">
+      Acceso restringido — Solo personal autorizado
+    </p>
+
+  </div>
+</div>
+
+<script src="/js/login.js"></script>
+</body>
+</html>

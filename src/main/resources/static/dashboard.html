@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard — Monitoreo Psicológico USAR COL-13</title>
+  <script src="/js/auth-guard.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
@@ -16,7 +17,7 @@
       <div class="flex items-center gap-3">
         <!-- LOGO: coloca el archivo en static/img/logo.png para que aparezca aquí -->
         <div class="h-11 w-11 rounded-full bg-white flex items-center justify-center flex-shrink-0 border-2 border-green-300 overflow-hidden">
-          <img src="/img/logo.jpg" alt="Logo USAR COL-13"
+          <img src="/img/logo.png" alt="Logo USAR COL-13"
                class="h-full w-full object-cover"
                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
           <span style="display:none" class="font-bold text-green-800 text-xs w-full h-full items-center justify-center text-center leading-tight px-1">USAR</span>
@@ -26,9 +27,14 @@
           <p class="text-green-100 mt-0.5 text-sm">Panel de Monitoreo Psicológico</p>
         </div>
       </div>
-      <a href="/" class="px-4 py-2 bg-white text-green-800 rounded-lg hover:bg-gray-100 font-semibold text-sm transition flex-shrink-0">
-        ← Nueva Encuesta
-      </a>
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <a href="/" class="px-4 py-2 bg-white text-green-800 rounded-lg hover:bg-gray-100 font-semibold text-sm transition">
+          ← Nueva Encuesta
+        </a>
+        <button onclick="cerrarSesion()" class="px-4 py-2 bg-red-700/80 text-white rounded-lg hover:bg-red-700 font-semibold text-sm transition">
+          Salir
+        </button>
+      </div>
     </div>
   </header>
 

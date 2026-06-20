@@ -34,6 +34,9 @@ public class WebController {
     @GetMapping("/perfil")
     public String perfil() { return "forward:/perfil.html"; }
 
+    @GetMapping("/login")
+    public String login() { return "forward:/login.html"; }
+
     // ─── API REST ──────────────────────────────────────────────────────────────
 
     /** Verifica si una cédula ya está registrada en el sistema */
