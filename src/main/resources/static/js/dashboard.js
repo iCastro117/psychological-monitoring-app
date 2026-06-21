@@ -158,15 +158,15 @@ function renderizarTabla(encuestas) {
                 <div class="flex gap-1 justify-center">
                     <button onclick="verPerfil(${e.idEncuesta})"
                         class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition">
-                        👁 VER
+                        VER
                     </button>
                     <button onclick="abrirEditar(${rid}, '${nombre.replace(/'/g,"\\'")}', '${cedula}')"
                         class="px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded text-xs font-semibold transition">
-                        ✏️ EDITAR
+                        EDITAR
                     </button>
                     <button onclick="abrirEliminar(${e.idEncuesta})"
                         class="px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-semibold transition">
-                        🗑 ELIMINAR
+                        ELIMINAR
                     </button>
                 </div>
             </td>
