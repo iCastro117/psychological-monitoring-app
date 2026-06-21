@@ -36,14 +36,12 @@ const DIMENSIONES = [
     { nombre: 'Apoyo y percepción social',  preguntas: [9, 15, 17, 22],icono: '🤝' },
 ];
 
-// Clases de color solo para el badge "Nivel X" de la cabecera
-// (ya no se muestra la tarjeta de predicción con título/descripción)
-const NIVEL_BADGE_CLASES = {
-    1: 'bg-green-100 text-green-800',
-    2: 'bg-blue-100 text-blue-800',
-    3: 'bg-yellow-100 text-yellow-800',
-    4: 'bg-orange-100 text-orange-800',
-    5: 'bg-red-100 text-red-800',
+const RIESGO_CONFIG = {
+    1: { color: '#16a34a', bgClass: 'bg-green-50',   border: 'border-green-400',  texto: 'text-green-800',  badge: 'bg-green-100 text-green-800', titulo: 'SIN RIESGO PSICOLÓGICO SIGNIFICATIVO', desc: 'El estado emocional del rescatista se encuentra dentro de los parámetros normales. Puede continuar con sus operaciones.' },
+    2: { color: '#2563eb', bgClass: 'bg-blue-50',    border: 'border-blue-400',   texto: 'text-blue-800',   badge: 'bg-blue-100 text-blue-800',   titulo: 'RIESGO PSICOLÓGICO BAJO',               desc: 'Se detectan indicadores leves. Se recomienda seguimiento de rutina y actividades de bienestar.' },
+    3: { color: '#ca8a04', bgClass: 'bg-yellow-50',  border: 'border-yellow-400', texto: 'text-yellow-800', badge: 'bg-yellow-100 text-yellow-800',titulo: 'RIESGO PSICOLÓGICO MODERADO',            desc: 'Se detectan indicadores de alerta. Es recomendable una evaluación con el psicólogo de la unidad.' },
+    4: { color: '#ea580c', bgClass: 'bg-orange-50',  border: 'border-orange-400', texto: 'text-orange-800', badge: 'bg-orange-100 text-orange-800',titulo: 'RIESGO PSICOLÓGICO ALTO',                desc: 'Se detectan señales significativas de estrés o trauma. Se requiere atención psicológica a corto plazo.' },
+    5: { color: '#dc2626', bgClass: 'bg-red-50',     border: 'border-red-500',    texto: 'text-red-800',    badge: 'bg-red-100 text-red-800',     titulo: 'RIESGO PSICOLÓGICO CRÍTICO',             desc: 'Se detectan indicadores severos. Se requiere intervención psicológica inmediata. No recomendado para operaciones.' },
 };
 
 // ─── Carga del perfil ────────────────────────────────────────────────────────
@@ -75,6 +73,7 @@ function renderizarPerfil(e) {
     document.getElementById('contenidoPerfil').classList.remove('hidden');
 
     const nivel  = e.nivelRiesgo || 1;
+    const cfg    = RIESGO_CONFIG[nivel] || RIESGO_CONFIG[1];
     const nombre = e.rescatista?.nombreCompleto || 'Desconocido';
     const cedula = e.rescatista?.cedula         || '—';
     const fecha  = e.fechaHora
@@ -87,7 +86,16 @@ function renderizarPerfil(e) {
     document.getElementById('perfilFecha').textContent  = `Evaluación: ${fecha}`;
     document.getElementById('perfilBadge').textContent  = `Nivel ${nivel}`;
     document.getElementById('perfilBadge').className    =
-        `px-4 py-2 rounded-xl font-bold text-base ${NIVEL_BADGE_CLASES[nivel] || NIVEL_BADGE_CLASES[1]}`;
+        `px-4 py-2 rounded-xl font-bold text-base ${cfg.badge}`;
+
+    // Predicción (sin icono)
+    const pred = document.getElementById('prediccionCard');
+    pred.className =
+        `rounded-2xl p-6 text-center shadow-md border-2 transition ${cfg.bgClass} ${cfg.border}`;
+    document.getElementById('prediccionTitulo').textContent    = cfg.titulo;
+    document.getElementById('prediccionTitulo').className      = `text-2xl sm:text-3xl font-black mb-2 ${cfg.texto}`;
+    document.getElementById('prediccionDescripcion').textContent = cfg.desc;
+    document.getElementById('prediccionDescripcion').className   = `text-sm sm:text-base max-w-lg mx-auto ${cfg.texto} opacity-90`;
 
     // Obtener array de respuestas (índice 0-22)
     const respuestas = [];
