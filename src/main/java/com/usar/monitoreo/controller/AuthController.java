@@ -1,5 +1,7 @@
 package com.usar.monitoreo.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -23,16 +25,16 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    // ─── Correos autorizados para acceder al dashboard ────────────────────────
+    // 🔎 Logger — ahora SÍ imprime el error real de SMTP en los logs de Render
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
+
     private static final Set<String> EMAILS_AUTORIZADOS = Set.of(
         "castrocjuanpablo@gmail.com",
         "anyiliz2010@gmail.com",
         "isabellacastrocamacho117@gmail.com"
     );
 
-    // OTP en memoria: email → {codigo, expiracion}
     private final Map<String, OtpEntry>     otpStorage     = new ConcurrentHashMap<>();
-    // Sesiones activas: token → {email, expiracion}
     private final Map<String, SessionEntry> sessionStorage = new ConcurrentHashMap<>();
 
     @Autowired
@@ -48,20 +50,19 @@ public class AuthController {
             @RequestBody Map<String, Object> datos) {
 
         String email = normalizar((String) datos.get("email"));
+        log.info("Solicitud de código para: {}", email);
 
         if (!EMAILS_AUTORIZADOS.contains(email)) {
-            // No revelar si el email existe o no en la lista
+            log.warn("Intento de acceso con correo NO autorizado: {}", email);
             return error("Correo no autorizado para acceder al sistema.");
         }
 
-        // Generar OTP de 4 dígitos con ceros a la izquierda
         String codigo = String.format("%04d", new Random().nextInt(10000));
-
-        // Guardar con expiración de 5 minutos
         otpStorage.put(email, new OtpEntry(codigo, System.currentTimeMillis() + 5 * 60_000L));
 
-        // Enviar correo
         try {
+            log.info("Intentando enviar correo desde remitente='{}' hacia='{}'", remitente, email);
+
             SimpleMailMessage msg = new SimpleMailMessage();
             msg.setFrom(remitente);
             msg.setTo(email);
@@ -75,9 +76,22 @@ public class AuthController {
                 "— Sistema USAR COL-13"
             );
             mailSender.send(msg);
+
+            log.info("✅ Correo enviado exitosamente a {}", email);
+
         } catch (Exception e) {
+            // 🔎 ESTA ES LA LÍNEA CLAVE QUE FALTABA:
+            // imprime la excepción COMPLETA (tipo + mensaje + stacktrace) en los logs de Render
+            log.error("❌ ERROR AL ENVIAR CORREO a {} — Causa: {}", email, e.toString(), e);
+
             otpStorage.remove(email);
-            return error("No se pudo enviar el código. Verifique la configuración de correo en Render.");
+
+            // Devolvemos el mensaje real de la excepción para verlo también en el navegador
+            Map<String, Object> r = new HashMap<>();
+            r.put("success", false);
+            r.put("mensaje", "No se pudo enviar el código. Verifique la configuración de correo en Render.");
+            r.put("errorTecnico", e.getClass().getSimpleName() + ": " + e.getMessage());
+            return ResponseEntity.status(400).body(r);
         }
 
         Map<String, Object> r = new HashMap<>();
@@ -108,7 +122,6 @@ public class AuthController {
             return error("Código incorrecto. Verifique e intente de nuevo.");
         }
 
-        // ✅ Código correcto — generar token de sesión (válido 8 horas)
         otpStorage.remove(email);
         String token = UUID.randomUUID().toString();
         sessionStorage.put(token,
@@ -121,7 +134,7 @@ public class AuthController {
         return ResponseEntity.ok(r);
     }
 
-    // ─── Verificar sesión activa (llamada en cada carga del dashboard) ────────
+    // ─── Verificar sesión activa ──────────────────────────────────────────────
 
     @GetMapping("/verificar-sesion")
     public ResponseEntity<Map<String, Object>> verificarSesion(
@@ -168,7 +181,7 @@ public class AuthController {
         return ResponseEntity.status(400).body(r);
     }
 
-    // ─── Clases internas de almacenamiento en memoria ─────────────────────────
+    // ─── Almacenamiento en memoria ─────────────────────────────────────────────
 
     private static class OtpEntry {
         final String codigo;

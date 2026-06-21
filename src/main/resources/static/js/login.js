@@ -1,7 +1,6 @@
 let emailActual = '';
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Si ya hay una sesión válida, saltar directo al dashboard
     const token = localStorage.getItem('authToken');
     if (token) {
         fetch(`/api/auth/verificar-sesion?token=${token}`)
@@ -58,13 +57,19 @@ function solicitarCodigo() {
             document.getElementById('codigoInput').value = '';
             document.getElementById('codigoInput').focus();
         } else {
-            mostrarError('emailError', data.mensaje || 'No se pudo enviar el código.');
+            // 🔎 Muestra el mensaje genérico + el error técnico real (si vino del backend)
+            let mensaje = data.mensaje || 'No se pudo enviar el código.';
+            if (data.errorTecnico) {
+                mensaje += '\n\nDetalle técnico: ' + data.errorTecnico;
+            }
+            mostrarError('emailError', mensaje);
+            console.error('Error técnico del servidor:', data.errorTecnico);
         }
     })
-    .catch(() => {
+    .catch((err) => {
         btn.disabled    = false;
         btn.textContent = 'Enviar código';
-        mostrarError('emailError', 'Error de conexión con el servidor.');
+        mostrarError('emailError', 'Error de conexión con el servidor: ' + err.message);
     });
 }
 
@@ -102,10 +107,10 @@ function verificarCodigo() {
             mostrarError('codigoError', data.mensaje || 'Código incorrecto.');
         }
     })
-    .catch(() => {
+    .catch((err) => {
         btn.disabled    = false;
         btn.textContent = 'Verificar e ingresar';
-        mostrarError('codigoError', 'Error de conexión con el servidor.');
+        mostrarError('codigoError', 'Error de conexión con el servidor: ' + err.message);
     });
 }
 
@@ -120,6 +125,7 @@ function volverAEmail() {
 function mostrarError(id, msg) {
     const el = document.getElementById(id);
     el.textContent = msg;
+    el.style.whiteSpace = 'pre-line';
     el.classList.remove('hidden');
 }
 
