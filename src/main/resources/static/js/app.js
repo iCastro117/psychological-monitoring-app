@@ -24,12 +24,17 @@ const preguntas = [
     "Estaría dispuesto a registrar mi estado emocional en un software antes y después de cada emergencia."
 ];
 
+// Escala de respuesta: ya no usa colores semáforo (verde/amarillo/naranja/rojo).
+// Todas las tarjetas tienen el mismo estilo neutro con borde verde y sombra;
+// el color cambia solo según el ESTADO (normal / hover / seleccionada),
+// nunca según el valor de la respuesta. Ver marcarSeleccionada() y las
+// clases CSS .tarjeta-respuesta en index.html.
 const escala = [
-    { valor: 1, etiqueta: "Nunca",          bg: "bg-green-100",  hover: "hover:bg-green-200",  borde: "border-green-300",  texto: "text-green-900"  },
-    { valor: 2, etiqueta: "Rara vez",       bg: "bg-green-50",   hover: "hover:bg-green-100",  borde: "border-green-200",  texto: "text-gray-700"   },
-    { valor: 3, etiqueta: "A veces",        bg: "bg-yellow-100", hover: "hover:bg-yellow-200", borde: "border-yellow-300", texto: "text-yellow-900" },
-    { valor: 4, etiqueta: "Frecuentemente", bg: "bg-orange-100", hover: "hover:bg-orange-200", borde: "border-orange-300", texto: "text-orange-900" },
-    { valor: 5, etiqueta: "Siempre",        bg: "bg-red-100",    hover: "hover:bg-red-200",    borde: "border-red-300",    texto: "text-red-900"    }
+    { valor: 1, etiqueta: "Nunca" },
+    { valor: 2, etiqueta: "Rara vez" },
+    { valor: 3, etiqueta: "A veces" },
+    { valor: 4, etiqueta: "Frecuentemente" },
+    { valor: 5, etiqueta: "Siempre" }
 ];
 
 let respuestasSeleccionadas = {};
@@ -68,10 +73,11 @@ function generarPreguntas() {
                     <input type="radio" name="resp${num}" value="${op.valor}"
                            class="hidden respuesta-radio" data-pregunta="${num}">
                     <div id="r${num}_${op.valor}"
-                         class="${op.bg} ${op.hover} ${op.borde} border-2 rounded-xl p-2 sm:p-3
-                                text-center transition transform hover:scale-105">
-                        <div class="font-bold text-base sm:text-lg ${op.texto}">${op.valor}</div>
-                        <div class="text-xs font-medium ${op.texto} hidden sm:block">${op.etiqueta}</div>
+                         class="tarjeta-respuesta border-2 border-green-300 rounded-xl p-2 sm:p-3
+                                text-center transition transform hover:scale-105 shadow-sm hover:shadow-lg
+                                hover:bg-green-50 hover:border-green-400">
+                        <div class="font-bold text-base sm:text-lg text-gray-700 valor-num">${op.valor}</div>
+                        <div class="text-xs font-medium text-gray-500 hidden sm:block etiqueta-txt">${op.etiqueta}</div>
                     </div>
                 </label>`;
         });
@@ -94,13 +100,24 @@ function marcarSeleccionada(num, valor) {
     for (let v = 1; v <= 5; v++) {
         const card = document.getElementById(`r${num}_${v}`);
         if (!card) continue;
-        card.classList.remove('ring-4', 'ring-green-700', 'ring-offset-2', 'opacity-50');
+        // Quita el estado "seleccionada" de todas las tarjetas de esta pregunta
+        card.classList.remove('bg-green-800', 'border-green-800', 'opacity-50');
+        card.querySelector('.valor-num')?.classList.remove('text-white');
+        card.querySelector('.etiqueta-txt')?.classList.remove('text-green-100');
+        card.querySelector('.valor-num')?.classList.add('text-gray-700');
+        card.querySelector('.etiqueta-txt')?.classList.add('text-gray-500');
         if (v !== valor) card.classList.add('opacity-50');
     }
+
+    // Pinta la tarjeta elegida de verde oscuro (única respuesta seleccionada)
     const selected = document.getElementById(`r${num}_${valor}`);
     if (selected) {
         selected.classList.remove('opacity-50');
-        selected.classList.add('ring-4', 'ring-green-700', 'ring-offset-2');
+        selected.classList.add('bg-green-800', 'border-green-800');
+        selected.querySelector('.valor-num')?.classList.remove('text-gray-700');
+        selected.querySelector('.etiqueta-txt')?.classList.remove('text-gray-500');
+        selected.querySelector('.valor-num')?.classList.add('text-white');
+        selected.querySelector('.etiqueta-txt')?.classList.add('text-green-100');
     }
 }
 
