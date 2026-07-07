@@ -7,28 +7,31 @@
   <script src="/js/auth-guard.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root { --azul: #084E86; }
+    input:focus, select:focus { border-color: #084E86 !important; outline: none; }
+  </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-100">
 <div class="min-h-screen flex flex-col">
 
   <!-- Header -->
-  <header class="bg-gradient-to-r from-green-900 to-green-800 text-white py-5 shadow-lg">
-    <div class="max-w-7xl mx-auto px-4 flex items-center justify-between gap-4">
+  <header style="background:linear-gradient(to right,#084E86,#0a65ab);" class="text-white shadow-xl">
+    <div class="max-w-7xl mx-auto px-4 py-5 flex items-center justify-between gap-4">
       <div class="flex items-center gap-3">
-        <!-- LOGO: coloca el archivo en static/img/logo.png para que aparezca aquí -->
-        <div class="h-11 w-11 rounded-full bg-white flex items-center justify-center flex-shrink-0 border-2 border-green-300 overflow-hidden">
-          <img src="/img/logo.png" alt="Logo USAR COL-13"
+        <div class="h-11 w-11 rounded-full bg-white flex items-center justify-center flex-shrink-0 border-2 border-blue-300 overflow-hidden shadow">
+          <img src="/img/logo.jpg" alt="Logo USAR COL-13"
                class="h-full w-full object-cover"
                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-          <span style="display:none" class="font-bold text-green-800 text-xs w-full h-full items-center justify-center text-center leading-tight px-1">USAR</span>
+          <span style="display:none" class="font-bold text-[#084E86] text-xs w-full h-full items-center justify-center text-center leading-tight px-1">USAR</span>
         </div>
         <div>
           <h1 class="text-2xl sm:text-3xl font-bold">Dashboard USAR COL-13</h1>
-          <p class="text-green-100 mt-0.5 text-sm">Panel de Monitoreo Psicológico</p>
+          <p class="text-blue-100 mt-0.5 text-sm">Panel de Monitoreo Psicológico</p>
         </div>
       </div>
       <div class="flex items-center gap-2 flex-shrink-0">
-        <a href="/" class="px-4 py-2 bg-white text-green-800 rounded-lg hover:bg-gray-100 font-semibold text-sm transition">
+        <a href="/" class="px-4 py-2 bg-white font-semibold text-sm rounded-lg hover:bg-gray-100 transition" style="color:#084E86;">
           ← Nueva Encuesta
         </a>
         <button onclick="cerrarSesion()" class="px-4 py-2 bg-red-700/80 text-white rounded-lg hover:bg-red-700 font-semibold text-sm transition">
@@ -40,36 +43,36 @@
 
   <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-6 space-y-6">
 
-    <!-- Tarjetas de estadísticas -->
+    <!-- Tarjetas de estadísticas — más sombra -->
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-      <div class="bg-white border-l-4 border-green-700 p-4 rounded-xl shadow-sm col-span-2 sm:col-span-1">
-        <div class="text-3xl font-bold text-green-700" id="totalEncuestas">0</div>
+      <div class="bg-white p-4 rounded-xl shadow-lg border-l-4 col-span-2 sm:col-span-1" style="border-color:#084E86;">
+        <div class="text-3xl font-bold" style="color:#084E86;" id="totalEncuestas">0</div>
         <div class="text-xs text-gray-500 mt-1">Total registros</div>
       </div>
-      <div class="bg-white border-l-4 border-emerald-500 p-4 rounded-xl shadow-sm">
+      <div class="bg-white p-4 rounded-xl shadow-lg border-l-4 border-emerald-500">
         <div class="text-3xl font-bold text-emerald-600" id="minimos">0</div>
         <div class="text-xs text-gray-500 mt-1">Mínimo</div>
       </div>
-      <div class="bg-white border-l-4 border-blue-500 p-4 rounded-xl shadow-sm">
+      <div class="bg-white p-4 rounded-xl shadow-lg border-l-4 border-blue-500">
         <div class="text-3xl font-bold text-blue-600" id="bajos">0</div>
         <div class="text-xs text-gray-500 mt-1">Bajo</div>
       </div>
-      <div class="bg-white border-l-4 border-yellow-500 p-4 rounded-xl shadow-sm">
+      <div class="bg-white p-4 rounded-xl shadow-lg border-l-4 border-yellow-500">
         <div class="text-3xl font-bold text-yellow-600" id="medios">0</div>
         <div class="text-xs text-gray-500 mt-1">Medio</div>
       </div>
-      <div class="bg-white border-l-4 border-orange-500 p-4 rounded-xl shadow-sm">
+      <div class="bg-white p-4 rounded-xl shadow-lg border-l-4 border-orange-500">
         <div class="text-3xl font-bold text-orange-600" id="altos">0</div>
         <div class="text-xs text-gray-500 mt-1">Alto</div>
       </div>
-      <div class="bg-white border-l-4 border-red-600 p-4 rounded-xl shadow-sm">
+      <div class="bg-white p-4 rounded-xl shadow-lg border-l-4 border-red-600">
         <div class="text-3xl font-bold text-red-700" id="criticos">0</div>
         <div class="text-xs text-gray-500 mt-1">Crítico</div>
       </div>
     </div>
 
-    <!-- Gráfica de distribución de riesgo -->
-    <div class="bg-white rounded-xl shadow-sm p-5 flex flex-col sm:flex-row items-center gap-6">
+    <!-- Gráfica — más sombra -->
+    <div class="bg-white rounded-xl shadow-lg p-5 flex flex-col sm:flex-row items-center gap-6">
       <div class="w-52 h-52 flex-shrink-0">
         <canvas id="riesgoChart"></canvas>
       </div>
@@ -79,14 +82,14 @@
       </div>
     </div>
 
-    <!-- Filtros -->
-    <div class="bg-white p-5 rounded-xl shadow-sm">
+    <!-- Filtros — más sombra -->
+    <div class="bg-white p-5 rounded-xl shadow-lg">
       <h2 class="font-bold text-gray-800 mb-3">Filtros</h2>
       <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
         <input type="text" id="busqueda" placeholder="Buscar por nombre o cédula..."
-          class="px-3 py-2 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-700 col-span-2">
+          class="px-3 py-2 border-2 border-gray-200 rounded-lg text-sm col-span-2">
         <select id="filtroRiesgo"
-          class="px-3 py-2 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-700">
+          class="px-3 py-2 border-2 border-gray-200 rounded-lg text-sm">
           <option value="">Todos los niveles</option>
           <option value="1">Mínimo</option>
           <option value="2">Bajo</option>
@@ -95,28 +98,29 @@
           <option value="5">Crítico</option>
         </select>
         <button id="btnRefrescar"
-          class="px-4 py-2 bg-green-800 text-white rounded-lg hover:bg-green-900 font-semibold text-sm transition">
-          Refrescar
+          style="background:#084E86;"
+          class="px-4 py-2 text-white rounded-lg font-semibold text-sm transition hover:opacity-90">
+          🔄 Refrescar
         </button>
       </div>
     </div>
 
-    <!-- Tabla de registros -->
-    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-      <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+    <!-- Tabla — más sombra, header más oscuro -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
         <h2 class="font-bold text-gray-800">Registro de encuestas</h2>
         <span id="contadorTabla" class="text-xs text-gray-400"></span>
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
-          <thead class="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th class="px-4 py-3 text-left font-semibold text-gray-600">Semáforo</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-600">Nombre Completo</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-600">Cédula de Ciudadanía</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-600">Fecha</th>
-              <th class="px-4 py-3 text-left font-semibold text-gray-600">Nivel de Riesgo</th>
-              <th class="px-4 py-3 text-center font-semibold text-gray-600">Acciones</th>
+          <thead>
+            <tr style="background:#1a3a56;">
+              <th class="px-4 py-3 text-left font-semibold text-white text-xs uppercase tracking-wider">Semáforo</th>
+              <th class="px-4 py-3 text-left font-semibold text-white text-xs uppercase tracking-wider">Nombre Completo</th>
+              <th class="px-4 py-3 text-left font-semibold text-white text-xs uppercase tracking-wider">Cédula de Ciudadanía</th>
+              <th class="px-4 py-3 text-left font-semibold text-white text-xs uppercase tracking-wider">Fecha</th>
+              <th class="px-4 py-3 text-left font-semibold text-white text-xs uppercase tracking-wider">Nivel de Riesgo</th>
+              <th class="px-4 py-3 text-center font-semibold text-white text-xs uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
           <tbody id="tablaEncuestas">
@@ -133,26 +137,22 @@
   </footer>
 </div>
 
-<!-- Modal EDITAR rescatista -->
+<!-- Modal EDITAR -->
 <div id="modalEditar" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
   <div class="bg-white rounded-2xl p-7 max-w-md w-full shadow-2xl">
     <h3 class="text-lg font-bold text-gray-800 mb-5">Editar datos del rescatista</h3>
     <input type="hidden" id="editRescatistaId">
     <div class="space-y-4">
       <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1">
-          Nombre Completo <span class="text-red-600">*</span>
-        </label>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Nombre Completo <span class="text-red-600">*</span></label>
         <input type="text" id="editNombre"
-          class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-700 text-sm"
+          class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg text-sm"
           oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]/g, '')">
       </div>
       <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1">
-          Cédula de Ciudadanía <span class="text-red-600">*</span>
-        </label>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">Cédula de Ciudadanía <span class="text-red-600">*</span></label>
         <input type="text" id="editCedula" inputmode="numeric" maxlength="15"
-          class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-700 text-sm"
+          class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg text-sm"
           oninput="this.value = this.value.replace(/[^0-9]/g, '')">
       </div>
     </div>
@@ -162,17 +162,18 @@
         Cancelar
       </button>
       <button id="btnGuardarEditar"
-        class="flex-1 py-2 bg-green-800 text-white rounded-xl font-bold hover:bg-green-900 transition text-sm">
+        style="background:#084E86;"
+        class="flex-1 py-2 text-white rounded-xl font-bold transition hover:opacity-90 text-sm">
         Guardar cambios
       </button>
     </div>
   </div>
 </div>
 
-<!-- Modal ELIMINAR confirmación -->
+<!-- Modal ELIMINAR -->
 <div id="modalEliminar" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
   <div class="bg-white rounded-2xl p-7 max-w-sm w-full shadow-2xl text-center">
-    <div class="text-5xl mb-3"></div>
+    <div class="text-5xl mb-3">🗑️</div>
     <h3 class="text-lg font-bold text-gray-800 mb-2">¿Eliminar este registro?</h3>
     <p class="text-gray-500 text-sm mb-6">Esta acción no se puede deshacer.</p>
     <input type="hidden" id="eliminarId">
@@ -189,7 +190,7 @@
   </div>
 </div>
 
-<!-- Toast de notificación -->
+<!-- Toast -->
 <div id="toast" class="hidden fixed bottom-6 right-6 px-5 py-3 rounded-xl text-white font-semibold shadow-lg z-50 text-sm"></div>
 
 <script src="/js/dashboard.js"></script>

@@ -24,11 +24,6 @@ const preguntas = [
     "Estaría dispuesto a registrar mi estado emocional en un software antes y después de cada emergencia."
 ];
 
-// Escala de respuesta: ya no usa colores semáforo (verde/amarillo/naranja/rojo).
-// Todas las tarjetas tienen el mismo estilo neutro con borde verde y sombra;
-// el color cambia solo según el ESTADO (normal / hover / seleccionada),
-// nunca según el valor de la respuesta. Ver marcarSeleccionada() y las
-// clases CSS .tarjeta-respuesta en index.html.
 const escala = [
     { valor: 1, etiqueta: "Nunca" },
     { valor: 2, etiqueta: "Rara vez" },
@@ -38,8 +33,8 @@ const escala = [
 ];
 
 let respuestasSeleccionadas = {};
-let cedulaDuplicada = false;    // true si el backend dice que la cédula ya existe
-let cedulaTimer     = null;     // timeout para la validación de min-10 dígitos
+let cedulaDuplicada = false;
+let cedulaTimer     = null;
 
 // ─── Inicialización ──────────────────────────────────────────────────────────
 
@@ -58,31 +53,34 @@ function generarPreguntas() {
     preguntas.forEach((pregunta, index) => {
         const num = index + 1;
         const div = document.createElement('div');
-        div.className = 'bg-white border-l-4 border-green-700 p-5 rounded-xl shadow-sm hover:shadow-md transition';
+        div.className = 'bloque-pregunta';
         div.id = `pregunta-${num}`;
 
+        // Header de la pregunta (fondo azul claro, borde izquierdo azul)
         let html = `
-            <p class="text-gray-800 font-semibold mb-3 text-sm sm:text-base">
-                <span class="text-green-700 font-bold">${num}.</span> ${pregunta}
-            </p>
-            <div class="grid grid-cols-5 gap-2">`;
+            <div class="bloque-pregunta-header">
+                <p class="text-gray-800 font-semibold text-sm sm:text-base m-0">
+                    <span class="text-red-500 font-bold mr-1">*</span>
+                    <span style="color:#084E86; font-weight:700;">${num}.</span>
+                    ${pregunta}
+                </p>
+            </div>
+            <div class="bloque-pregunta-body">
+                <div class="grid grid-cols-5 gap-2">`;
 
         escala.forEach(op => {
             html += `
                 <label class="cursor-pointer select-none">
                     <input type="radio" name="resp${num}" value="${op.valor}"
-                           class="hidden respuesta-radio" data-pregunta="${num}">
-                    <div id="r${num}_${op.valor}"
-                         class="tarjeta-respuesta border-2 border-green-300 rounded-xl p-2 sm:p-3
-                                text-center transition transform hover:scale-105 shadow-sm hover:shadow-lg
-                                hover:bg-green-50 hover:border-green-400">
-                        <div class="font-bold text-base sm:text-lg text-gray-700 valor-num">${op.valor}</div>
-                        <div class="text-xs font-medium text-gray-500 hidden sm:block etiqueta-txt">${op.etiqueta}</div>
+                           class="hidden" data-pregunta="${num}">
+                    <div id="r${num}_${op.valor}" class="tarjeta-resp">
+                        <div class="val-num font-bold text-base sm:text-lg" style="color:#084E86;">${op.valor}</div>
+                        <div class="val-txt text-xs font-medium text-gray-500 hidden sm:block">${op.etiqueta}</div>
                     </div>
                 </label>`;
         });
 
-        html += `</div>`;
+        html += `</div></div>`;
         div.innerHTML = html;
         container.appendChild(div);
 
@@ -100,24 +98,19 @@ function marcarSeleccionada(num, valor) {
     for (let v = 1; v <= 5; v++) {
         const card = document.getElementById(`r${num}_${v}`);
         if (!card) continue;
-        // Quita el estado "seleccionada" de todas las tarjetas de esta pregunta
-        card.classList.remove('bg-green-800', 'border-green-800', 'opacity-50');
-        card.querySelector('.valor-num')?.classList.remove('text-white');
-        card.querySelector('.etiqueta-txt')?.classList.remove('text-green-100');
-        card.querySelector('.valor-num')?.classList.add('text-gray-700');
-        card.querySelector('.etiqueta-txt')?.classList.add('text-gray-500');
-        if (v !== valor) card.classList.add('opacity-50');
+        card.classList.remove('seleccionada', 'opacidad');
+        // Restaurar colores normales
+        const vn = card.querySelector('.val-num');
+        const vt = card.querySelector('.val-txt');
+        if (vn) vn.style.color = '#084E86';
+        if (vt) { vt.style.color = ''; vt.className = 'val-txt text-xs font-medium text-gray-500 hidden sm:block'; }
+        if (v !== valor) card.classList.add('opacidad');
     }
 
-    // Pinta la tarjeta elegida de verde oscuro (única respuesta seleccionada)
     const selected = document.getElementById(`r${num}_${valor}`);
     if (selected) {
-        selected.classList.remove('opacity-50');
-        selected.classList.add('bg-green-800', 'border-green-800');
-        selected.querySelector('.valor-num')?.classList.remove('text-gray-700');
-        selected.querySelector('.etiqueta-txt')?.classList.remove('text-gray-500');
-        selected.querySelector('.valor-num')?.classList.add('text-white');
-        selected.querySelector('.etiqueta-txt')?.classList.add('text-green-100');
+        selected.classList.remove('opacidad');
+        selected.classList.add('seleccionada');
     }
 }
 
@@ -131,22 +124,15 @@ function actualizarProgreso() {
 }
 
 // ─── Validación inline de cédula ─────────────────────────────────────────────
-// Solicitud: error aparece EN EL MISMO CAMPO (borde rojo + texto chiquito debajo)
-// SIN popup. El popup solo se usa para otras validaciones.
 
 function configurarValidacionCedula() {
     const inputCedula = document.getElementById('cedula');
 
-    // Mientras escribe: timer de 2 segundos para validar longitud mínima
     inputCedula.addEventListener('input', function () {
         clearTimeout(cedulaTimer);
         limpiarErrorCedulaInline();
-
         const val = this.value.trim();
-
         if (val.length === 0) return;
-
-        // Arranca un timer: si después de 2 s aún hay menos de 10 dígitos → error inline
         cedulaTimer = setTimeout(() => {
             if (val.length > 0 && val.length < 10) {
                 mostrarErrorCedulaInline('Mínimo 10 números requeridos');
@@ -154,29 +140,16 @@ function configurarValidacionCedula() {
         }, 2000);
     });
 
-    // Al salir del campo: verifica si la cédula ya está registrada
     inputCedula.addEventListener('blur', function () {
         clearTimeout(cedulaTimer);
         const val = this.value.trim();
-
         if (val.length === 0) return;
-
-        // Primero valida longitud
-        if (val.length < 10) {
-            mostrarErrorCedulaInline('Mínimo 10 números requeridos');
-            return;
-        }
-
-        // Luego consulta el backend si ya existe
+        if (val.length < 10) { mostrarErrorCedulaInline('Mínimo 10 números requeridos'); return; }
         verificarCedulaDuplicada(val);
     });
 
-    // Si el usuario vuelve a editar, limpia el estado
     inputCedula.addEventListener('focus', function () {
-        // Solo limpia el error de duplicado, no el de longitud
-        if (cedulaDuplicada) {
-            limpiarErrorCedulaInline();
-        }
+        if (cedulaDuplicada) limpiarErrorCedulaInline();
     });
 }
 
@@ -194,23 +167,18 @@ function verificarCedulaDuplicada(cedula) {
             } else {
                 cedulaDuplicada = false;
                 indicador.textContent = '✓ Cédula disponible';
-                indicador.className   = 'text-xs text-green-600 mt-1 font-medium min-h-[1rem]';
+                indicador.className   = 'text-xs font-medium mt-1 min-h-[1rem]';
+                indicador.style.color = '#084E86';
             }
         })
-        .catch(() => {
-            // Si falla la red, no bloquea (se validará en el servidor de todas formas)
-            cedulaDuplicada = false;
-            indicador.textContent = '';
-        });
+        .catch(() => { cedulaDuplicada = false; indicador.textContent = ''; });
 }
 
 function mostrarErrorCedulaInline(msg) {
     const input   = document.getElementById('cedula');
     const errorEl = document.getElementById('cedulaError');
     const ind     = document.getElementById('cedulaIndicador');
-
-    input.classList.remove('border-gray-300');
-    input.classList.add('border-red-500');
+    input.style.borderColor = '#ef4444';
     errorEl.textContent = msg;
     errorEl.classList.remove('hidden');
     ind.textContent = '';
@@ -220,16 +188,15 @@ function limpiarErrorCedulaInline() {
     const input   = document.getElementById('cedula');
     const errorEl = document.getElementById('cedulaError');
     const ind     = document.getElementById('cedulaIndicador');
-
-    input.classList.remove('border-red-500');
-    input.classList.add('border-gray-300');
+    input.style.borderColor = '';
     errorEl.classList.add('hidden');
     errorEl.textContent = '';
     cedulaDuplicada = false;
     ind.textContent = '';
+    ind.style.color = '';
 }
 
-// ─── Eventos de los modales ───────────────────────────────────────────────────
+// ─── Eventos ─────────────────────────────────────────────────────────────────
 
 function configurarEventos() {
     const modalConf  = document.getElementById('modalConfirmacion');
@@ -265,36 +232,17 @@ function configurarEventos() {
     });
 }
 
-// ─── Validación antes de mostrar modal de confirmación ───────────────────────
+// ─── Validación ───────────────────────────────────────────────────────────────
 
 function validarFormulario() {
     const nombre = document.getElementById('nombreCompleto').value.trim();
     const cedula = document.getElementById('cedula').value.trim();
 
-    if (!nombre) {
-        mostrarError('Por favor ingrese su nombre completo.');
-        return false;
-    }
-    if (!/^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]+$/.test(nombre)) {
-        mostrarError('El nombre solo debe contener letras y espacios.');
-        return false;
-    }
-    if (!cedula) {
-        mostrarError('Por favor ingrese su cédula de ciudadanía.');
-        return false;
-    }
-    if (cedula.length < 10) {
-        // Error de longitud: se muestra inline (no popup)
-        mostrarErrorCedulaInline('Mínimo 10 números requeridos');
-        document.getElementById('cedula').focus();
-        return false;
-    }
-    if (cedulaDuplicada) {
-        // Error de duplicado: se muestra inline (no popup)
-        mostrarErrorCedulaInline('Esta cédula ya fue registrada en el sistema');
-        document.getElementById('cedula').focus();
-        return false;
-    }
+    if (!nombre) { mostrarError('Por favor ingrese su nombre completo.'); return false; }
+    if (!/^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]+$/.test(nombre)) { mostrarError('El nombre solo debe contener letras y espacios.'); return false; }
+    if (!cedula) { mostrarError('Por favor ingrese su cédula de ciudadanía.'); return false; }
+    if (cedula.length < 10) { mostrarErrorCedulaInline('Mínimo 10 números requeridos'); document.getElementById('cedula').focus(); return false; }
+    if (cedulaDuplicada) { mostrarErrorCedulaInline('Esta cédula ya fue registrada en el sistema'); document.getElementById('cedula').focus(); return false; }
     if (Object.keys(respuestasSeleccionadas).length !== preguntas.length) {
         mostrarError(`Por favor responda todas las preguntas. Lleva ${Object.keys(respuestasSeleccionadas).length} de ${preguntas.length}.`);
         return false;
@@ -332,7 +280,6 @@ function enviarEncuesta() {
         modalConf.classList.add('hidden');
         btnConfirmar.disabled    = false;
         btnConfirmar.textContent = 'Confirmar';
-
         if (data.success) {
             document.getElementById('modalExito').classList.remove('hidden');
         } else {
@@ -347,8 +294,6 @@ function enviarEncuesta() {
         console.error('Error fetch:', err);
     });
 }
-
-// ─── Helper popup de error general ───────────────────────────────────────────
 
 function mostrarError(msg) {
     document.getElementById('mensajeError').textContent = msg;
