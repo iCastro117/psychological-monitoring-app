@@ -78,21 +78,21 @@
       </div>
     </div>
 
-    <!-- ESPACIO PARA IMAGEN BANNER — coloca tu imagen en static/img/banner.jpg -->
-    <div class="max-w-4xl mx-auto px-4 pb-4 mt-2">
-      <div class="w-full rounded-2xl overflow-hidden shadow-md" style="height:140px;">
-        <img src="/img/banner.jpg" alt="Banner USAR COL-13"
-             class="w-full h-full object-cover"
-             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-        <!-- Placeholder visible si no hay imagen -->
-        <div style="display:none; height:140px;"
-             class="w-full h-full border-2 border-dashed border-blue-300 rounded-2xl
-                    flex items-center justify-center text-blue-200 text-sm font-medium gap-2">
-          📷 Coloca tu imagen en <code class="bg-white/20 px-2 py-0.5 rounded text-xs">static/img/banner.jpg</code>
-        </div>
+  </header>
+
+  <!-- BANNER — separado del header, bordes redondeados pequeños, imagen a ancho completo -->
+  <div class="w-full bg-white shadow-md" style="padding: 0;">
+    <div style="width:100%; max-height:280px; overflow:hidden; border-radius:0 0 6px 6px;">
+      <img src="/img/banner.jpg" alt="Banner USAR COL-13"
+           style="width:100%; max-height:280px; object-fit:cover; object-position:center; display:block; border-radius:0 0 6px 6px;"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+      <!-- Placeholder si no hay imagen -->
+      <div style="display:none; height:160px; background:#e8f1fa; border-radius:0 0 6px 6px;"
+           class="w-full flex items-center justify-center gap-2 text-sm font-medium" style="color:#084E86;">
+        📷 Coloca tu imagen en <code class="text-xs bg-white px-2 py-0.5 rounded shadow-sm">static/img/banner.jpg</code>
       </div>
     </div>
-  </header>
+  </div>
 
   <!-- BARRA DE PROGRESO (más gruesa) -->
   <div class="bg-white border-b border-gray-200 px-4 py-3 shadow-sm">
