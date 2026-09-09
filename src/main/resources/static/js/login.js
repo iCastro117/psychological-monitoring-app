@@ -1,6 +1,12 @@
+// Ingreso en dos pasos de login.html: el correo va a POST /api/auth/solicitar-codigo y el
+// código de 4 dígitos a POST /api/auth/verificar-codigo. Si el código es correcto guarda el
+// token en el navegador (el que después revisa auth-guard.js) y entra a /dashboard.
+
+// El correo del paso 1, que se necesita para verificar el código en el paso 2.
 let emailActual = '';
 
 document.addEventListener('DOMContentLoaded', function () {
+    // Si ya había un token guardado y el backend lo da por válido, se salta el login.
     const token = localStorage.getItem('authToken');
     if (token) {
         fetch(`/api/auth/verificar-sesion?token=${token}`)
@@ -25,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // ─── Paso 1: solicitar código ─────────────────────────────────────────────────
 
+// Manda el correo al backend, que es quien envía el código. Si responde bien, se muestra el paso del código.
 function solicitarCodigo() {
     const email = document.getElementById('emailInput').value.trim().toLowerCase();
     const btn   = document.getElementById('btnSolicitarCodigo');
@@ -75,6 +82,7 @@ function solicitarCodigo() {
 
 // ─── Paso 2: verificar código ─────────────────────────────────────────────────
 
+// Manda correo y código; si el backend los aprueba, deja token, correo y vencimiento en el navegador.
 function verificarCodigo() {
     const codigo = document.getElementById('codigoInput').value.trim();
     const btn    = document.getElementById('btnVerificarCodigo');

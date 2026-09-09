@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+<!-- Encuesta de monitoreo psicológico: es la pantalla que llenan los rescatistas. -->
+<!-- Todo el movimiento lo hace js/app.js: arma las 23 preguntas, valida los datos y envía. -->
+<!-- Página pública, no pide sesión. -->
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -6,6 +9,7 @@
   <title>Monitoreo Psicológico - USAR COL-13</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* Estilos propios de esta pantalla: tarjetas de respuesta, bloque de pregunta y barra de progreso. */
     :root { --azul: #084E86; --azul-hover: #063d6a; --azul-light: #e8f1fa; }
 
     /* Tarjetas de respuesta */
@@ -64,6 +68,7 @@
 <div class="min-h-screen flex flex-col">
 
   <!-- HEADER -->
+  <!-- Encabezado con el logo y el nombre del sistema. Es fijo, no lo toca ningún .js. -->
   <header style="background: linear-gradient(to right,#084E86,#0a65ab);" class="text-white shadow-xl">
     <div class="max-w-4xl mx-auto px-4 pt-5 pb-3 flex items-center gap-4">
       <div class="h-12 w-12 rounded-full bg-white flex items-center justify-center flex-shrink-0 border-2 border-blue-300 overflow-hidden shadow-md">
@@ -95,6 +100,7 @@
   </div>
 
   <!-- BARRA DE PROGRESO (más gruesa) -->
+  <!-- Avance de la encuesta. app.js actualiza #progreso, #porcentaje y #barraProgreso al responder. -->
   <div class="bg-white border-b border-gray-200 px-4 py-3 shadow-sm">
     <div class="max-w-4xl mx-auto">
       <div class="flex justify-between text-xs font-semibold mb-1.5" style="color:#084E86">
@@ -108,10 +114,12 @@
   </div>
 
   <!-- FORMULARIO -->
+  <!-- Cuerpo de la encuesta. app.js lee todo lo de aquí adentro cuando se envía. -->
   <main class="flex-1 max-w-4xl mx-auto w-full px-4 py-7">
     <form id="encuestaForm" novalidate class="space-y-6">
 
       <!-- Datos personales -->
+      <!-- Nombre y cédula del rescatista. app.js valida la cédula y avisa en #cedulaError. -->
       <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-md">
         <h2 class="text-lg font-bold text-gray-800 mb-5">Por favor ingrese sus datos personales</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -156,9 +164,11 @@
       </div>
 
       <!-- Preguntas -->
+      <!-- Aquí van las 23 preguntas: app.js las genera dentro de #preguntasContainer. -->
       <div id="preguntasContainer" class="space-y-4"></div>
 
       <!-- Botón enviar -->
+      <!-- Botón de envío. app.js lo escucha y abre el modal de confirmación. -->
       <div class="flex justify-center pt-2 pb-8">
         <button type="button" id="btnEnviar"
           style="background:#084E86;"
@@ -170,12 +180,14 @@
     </form>
   </main>
 
+  <!-- Pie de página. -->
   <footer class="bg-gray-900 text-gray-400 py-4 text-center text-xs">
     © 2026 Sistema de Monitoreo Psicológico USAR COL-13 | Confidencial
   </footer>
 </div>
 
 <!-- Modal Confirmación -->
+<!-- Pregunta si de verdad quiere enviar. app.js lo abre y cierra. -->
 <div id="modalConfirmacion" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
   <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
     <h3 class="text-xl font-bold text-gray-800 mb-3">Confirmar envío</h3>
@@ -196,6 +208,7 @@
 </div>
 
 <!-- Modal Éxito -->
+<!-- Aviso de que la encuesta quedó guardada. -->
 <div id="modalExito" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
   <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl text-center">
     <div class="text-6xl mb-4">✅</div>
@@ -213,6 +226,7 @@
 </div>
 
 <!-- Modal Error -->
+<!-- Aviso de fallo. El texto lo escribe app.js en #mensajeError. -->
 <div id="modalError" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
   <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl text-center">
     <div class="text-6xl mb-4">❌</div>

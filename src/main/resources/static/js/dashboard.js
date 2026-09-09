@@ -1,8 +1,14 @@
+// Panel de dashboard.html: trae las encuestas de GET /api/encuestas y de ahí salen las tarjetas,
+// la gráfica de dona y la tabla con buscador y filtro. Desde la tabla también se edita el
+// rescatista (PUT /api/rescatistas/{id}) y se borra la encuesta (DELETE /api/encuestas/{id}).
+
+// Todas las encuestas que llegaron del backend. Lo demás se pinta a partir de esta lista.
 let encuestasGlobales = [];
 let chartInstance = null;
 
 // ─── Configuración de niveles de riesgo ──────────────────────────────────────
 
+// Color y etiqueta de cada nivel (1 a 5). El nivel lo calcula el backend y viene en cada encuesta.
 const RIESGO = {
     1: { etiqueta: 'MÍNIMO',  color: '#16a34a', bg: 'bg-emerald-100', texto: 'text-emerald-800', semaforo: 'bg-green-500'  },
     2: { etiqueta: 'BAJO',    color: '#2563eb', bg: 'bg-blue-100',    texto: 'text-blue-800',    semaforo: 'bg-blue-500'   },
@@ -33,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // ─── Carga de datos ───────────────────────────────────────────────────────────
 
+// Trae las encuestas y vuelve a pintar tarjetas, gráfica y tabla. Se repite al refrescar y después de editar o eliminar.
 function cargarEncuestas() {
     fetch('/api/encuestas')
         .then(r => r.json())
@@ -53,6 +60,7 @@ function cargarEncuestas() {
 
 // ─── Estadísticas ────────────────────────────────────────────────────────────
 
+// Cuenta cuántas encuestas hay de cada nivel y las pone en las tarjetas de arriba.
 function actualizarEstadisticas() {
     document.getElementById('totalEncuestas').textContent = encuestasGlobales.length;
     [1, 2, 3, 4, 5].forEach(n => {
@@ -64,6 +72,7 @@ function actualizarEstadisticas() {
 
 // ─── Gráfica de dona ─────────────────────────────────────────────────────────
 
+// La dona con el conteo por nivel. La leyenda se arma aparte porque muestra el número y el porcentaje.
 function actualizarGrafica() {
     const counts = [1, 2, 3, 4, 5].map(n =>
         encuestasGlobales.filter(e => e.nivelRiesgo === n).length);
@@ -103,6 +112,7 @@ function actualizarGrafica() {
 
 // ─── Filtrado y renderizado ───────────────────────────────────────────────────
 
+// Aplica el buscador (nombre o cédula) y el filtro de nivel sobre encuestasGlobales y manda el resultado a la tabla.
 function filtrarYRenderizar() {
     const busqueda = document.getElementById('busqueda').value.toLowerCase();
     const filtroN  = document.getElementById('filtroRiesgo').value;
@@ -121,6 +131,7 @@ function filtrarYRenderizar() {
     renderizarTabla(filtradas);
 }
 
+// Pinta las filas. Los botones VER, EDITAR y ELIMINAR llaman a las funciones de abajo con el id de la encuesta.
 function renderizarTabla(encuestas) {
     const tbody = document.getElementById('tablaEncuestas');
 
@@ -189,6 +200,7 @@ function abrirEditar(rescatistaId, nombre, cedula) {
     document.getElementById('modalEditar').classList.remove('hidden');
 }
 
+// Manda el nombre y la cédula del modal a PUT /api/rescatistas/{id} y recarga la tabla.
 function guardarEdicion() {
     const id     = document.getElementById('editRescatistaId').value;
     const nombre = document.getElementById('editNombre').value.trim();
@@ -227,6 +239,7 @@ function abrirEliminar(idEncuesta) {
     document.getElementById('modalEliminar').classList.remove('hidden');
 }
 
+// Borra la encuesta con DELETE /api/encuestas/{id} y recarga la tabla.
 function confirmarEliminar() {
     const id = document.getElementById('eliminarId').value;
     document.getElementById('btnConfirmarEliminar').textContent = 'Eliminando...';

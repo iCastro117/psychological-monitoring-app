@@ -3,6 +3,9 @@ package com.usar.monitoreo.entity;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import jakarta.persistence.*;
 
+// Una fila por formulario enviado: las 23 respuestas, el nivel de riesgo ya calculado
+// y a qué rescatista pertenece. La llena EncuestaService y la leen dashboard.js y perfil.js.
+
 /**
  * Fix crítico: @JsonAutoDetect(fieldVisibility = ANY) le dice a Jackson
  * que serialice todos los campos privados directamente, incluyendo
@@ -54,6 +57,7 @@ public class Encuesta {
     @Column(length = 500)
     private String observaciones;
 
+    // La fecha se pone sola al crear la encuesta; no viene del formulario.
     public Encuesta() {
         this.fechaHora = System.currentTimeMillis();
     }
@@ -69,6 +73,7 @@ public class Encuesta {
     public String getObservaciones()                { return observaciones; }
     public void setObservaciones(String v)          { this.observaciones = v; }
 
+    // Las 23 respuestas son campos sueltos, así que se entra a ellas por número (1 a 23).
     public Integer getRespuesta(int numero) {
         switch (numero) {
             case 1:  return respuesta1;  case 2:  return respuesta2;

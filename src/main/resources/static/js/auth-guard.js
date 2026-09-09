@@ -10,6 +10,7 @@
     // Oculta el body mientras se verifica (evita parpadeo de datos sensibles)
     document.documentElement.style.visibility = 'hidden';
 
+    // Token y vencimiento son los que dejó login.js al ingresar.
     const token = localStorage.getItem('authToken');
     const expira = Number(localStorage.getItem('authExpira')) || 0;
 
@@ -19,6 +20,7 @@
         return;
     }
 
+    // Confirma el token contra el backend y de paso actualiza el vencimiento.
     fetch(`/api/auth/verificar-sesion?token=${encodeURIComponent(token)}`)
         .then(r => r.json())
         .then(data => {
@@ -38,6 +40,7 @@
         });
 })();
 
+// Borra los datos de sesión solo del navegador; no avisa al servidor.
 function cerrarSesionLocal() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('authEmail');

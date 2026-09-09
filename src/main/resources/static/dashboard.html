@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<!-- Panel de administración: tarjetas de resumen, gráfica, filtros y tabla de encuestas. -->
+<!-- Todo el movimiento lo hace js/dashboard.js. Página privada: auth-guard.js exige sesión. -->
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -16,6 +18,7 @@
 <div class="min-h-screen flex flex-col">
 
   <!-- Header -->
+  <!-- Encabezado: logo, enlace a la encuesta y botón Salir, que cierra la sesión. -->
   <header style="background:linear-gradient(to right,#084E86,#0a65ab);" class="text-white shadow-xl">
     <div class="max-w-7xl mx-auto px-4 py-5 flex items-center justify-between gap-4">
       <div class="flex items-center gap-3">
@@ -44,6 +47,7 @@
   <main class="flex-1 max-w-7xl mx-auto w-full px-4 py-6 space-y-6">
 
     <!-- Tarjetas de estadísticas — más sombra -->
+    <!-- Resumen por nivel de riesgo. Los números los escribe dashboard.js. -->
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
       <div class="bg-white p-4 rounded-xl shadow-lg border-l-4 col-span-2 sm:col-span-1" style="border-color:#084E86;">
         <div class="text-3xl font-bold" style="color:#084E86;" id="totalEncuestas">0</div>
@@ -72,6 +76,7 @@
     </div>
 
     <!-- Gráfica — más sombra -->
+    <!-- Distribución de riesgo. dashboard.js dibuja #riesgoChart y llena #leyendaChart. -->
     <div class="bg-white rounded-xl shadow-lg p-5 flex flex-col sm:flex-row items-center gap-6">
       <div class="w-52 h-52 flex-shrink-0">
         <canvas id="riesgoChart"></canvas>
@@ -83,6 +88,7 @@
     </div>
 
     <!-- Filtros — más sombra -->
+    <!-- Búsqueda por nombre o cédula y filtro por nivel. dashboard.js filtra la tabla con esto. -->
     <div class="bg-white p-5 rounded-xl shadow-lg">
       <h2 class="font-bold text-gray-800 mb-3">Filtros</h2>
       <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
@@ -100,12 +106,13 @@
         <button id="btnRefrescar"
           style="background:#084E86;"
           class="px-4 py-2 text-white rounded-lg font-semibold text-sm transition hover:opacity-90">
-          🔄 Refrescar
+          Refrescar
         </button>
       </div>
     </div>
 
     <!-- Tabla — más sombra, header más oscuro -->
+    <!-- Tabla de encuestas. Las filas las genera dashboard.js dentro de #tablaEncuestas. -->
     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
       <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
         <h2 class="font-bold text-gray-800">Registro de encuestas</h2>
@@ -132,12 +139,14 @@
 
   </main>
 
+  <!-- Pie de página. -->
   <footer class="bg-gray-900 text-gray-400 py-4 text-center text-xs mt-4">
     © 2026 Sistema de Monitoreo Psicológico USAR COL-13 | Confidencial
   </footer>
 </div>
 
 <!-- Modal EDITAR -->
+<!-- Cambia nombre y cédula de un registro. dashboard.js lo llena y guarda los cambios. -->
 <div id="modalEditar" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
   <div class="bg-white rounded-2xl p-7 max-w-md w-full shadow-2xl">
     <h3 class="text-lg font-bold text-gray-800 mb-5">Editar datos del rescatista</h3>
@@ -171,6 +180,7 @@
 </div>
 
 <!-- Modal ELIMINAR -->
+<!-- Confirma el borrado de un registro. El id a borrar lo pone dashboard.js en #eliminarId. -->
 <div id="modalEliminar" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4">
   <div class="bg-white rounded-2xl p-7 max-w-sm w-full shadow-2xl text-center">
     <div class="text-5xl mb-3">🗑️</div>
@@ -191,6 +201,7 @@
 </div>
 
 <!-- Toast -->
+<!-- Aviso flotante de resultado. El mensaje lo pone dashboard.js. -->
 <div id="toast" class="hidden fixed bottom-6 right-6 px-5 py-3 rounded-xl text-white font-semibold shadow-lg z-50 text-sm"></div>
 
 <script src="/js/dashboard.js"></script>

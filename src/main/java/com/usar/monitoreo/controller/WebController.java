@@ -15,6 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+// Recibe lo que manda el formulario de index.html (app.js) y lo guarda en la base de datos.
+// También sirve las páginas (/, /dashboard, /perfil, /login) y la API que consumen
+// dashboard.js y perfil.js. Guardar y calcular el riesgo lo hace EncuestaService.
 @Controller
 @RequestMapping("/")
 public class WebController {
@@ -40,6 +43,7 @@ public class WebController {
     // ─── API REST ──────────────────────────────────────────────────────────────
 
     /** Verifica si una cédula ya está registrada en el sistema */
+    // Lo llama app.js mientras el usuario escribe la cédula, para avisarle en el momento.
     @GetMapping("/api/cedula-existe/{cedula}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> cedulaExiste(@PathVariable String cedula) {
@@ -50,6 +54,7 @@ public class WebController {
     }
 
     /** Recibe y guarda una encuesta */
+    // Aquí llega el envío de app.js: revisa los datos, crea al rescatista si no existe y guarda.
     @PostMapping("/api/enviar-encuesta")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> enviarEncuesta(@RequestBody Map<String, Object> datos) {
@@ -95,6 +100,7 @@ public class WebController {
     }
 
     /** Lista todas las encuestas */
+    // dashboard.js la pide al cargar para llenar la tabla.
     @GetMapping("/api/encuestas")
     @ResponseBody
     public ResponseEntity<List<Encuesta>> obtenerEncuestas() {
@@ -102,6 +108,7 @@ public class WebController {
     }
 
     /** Detalle de una encuesta — ahora devuelve respuesta1-23 gracias a @JsonAutoDetect */
+    // perfil.js la pide al abrir una encuesta para mostrar las 23 respuestas.
     @GetMapping("/api/encuestas/{id}")
     @ResponseBody
     public ResponseEntity<Encuesta> obtenerEncuesta(@PathVariable Long id) {
@@ -111,13 +118,23 @@ public class WebController {
     }
 
     /** Elimina una encuesta */
+    // Botón de borrar del dashboard.
     @DeleteMapping("/api/encuestas/{id}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> eliminarEncuesta(@PathVariable Long id) {
         try {
-            if (!encuestaRepository.existsById(id))
+            Optional<Encuesta> encuesta = encuestaRepository.findById(id);
+            if (encuesta.isEmpty())
                 return errorResponse("Encuesta no encontrada.");
+
+            Long idRescatista = encuesta.get().getRescatista().getId();
             encuestaRepository.deleteById(id);
+
+            // Los datos viven en dos tablas: si la persona se queda sin encuestas y
+            // no se borra también, su cédula queda bloqueada para siempre aunque en
+            // el dashboard ya no aparezca nada.
+            if (encuestaRepository.findByRescatistaId(idRescatista).isEmpty())
+                rescatistaRepository.deleteById(idRescatista);
             Map<String, Object> r = new HashMap<>();
             r.put("success", true);
             r.put("mensaje", "Encuesta eliminada exitosamente");
@@ -128,6 +145,7 @@ public class WebController {
     }
 
     /** Edita nombre y cédula del rescatista */
+    // dashboard.js la usa al editar los datos de la persona desde el detalle.
     @PutMapping("/api/rescatistas/{id}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> actualizarRescatista(
@@ -155,6 +173,7 @@ public class WebController {
     }
 
     /** Alertas de riesgo alto */
+    // Devuelve solo las encuestas de nivel 3 o más; queda lista, hoy ningún js la llama.
     @GetMapping("/api/alertas")
     @ResponseBody
     public ResponseEntity<List<Encuesta>> obtenerAlertas() {

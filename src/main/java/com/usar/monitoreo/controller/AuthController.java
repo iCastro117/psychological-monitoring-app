@@ -40,12 +40,15 @@ import java.util.concurrent.ConcurrentHashMap;
  * en memoria: un reinicio de la instancia (frecuente en el plan gratuito de
  * Render) ya no cierra las sesiones abiertas.
  */
+// Lo consumen login.js (pedir el código y verificarlo) y auth-guard.js (revisar la sesión
+// al abrir dashboard.html y perfil.html, y cerrarla).
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
+    // Lista fija de correos que pueden entrar al dashboard; cualquier otro se rechaza.
     private static final Set<String> EMAILS_AUTORIZADOS = Set.of(
             "castrocjuanpablo@gmail.com",
             "anyiliz2010@gmail.com",
@@ -56,6 +59,7 @@ public class AuthController {
     /** Duración exacta de la sesión: 2 horas desde el momento del login. */
     private static final long DURACION_SESION_MS = 2 * 60 * 60_000L;
 
+    // Códigos pendientes en memoria (correo → código); se borran al usarlos o al vencer.
     private final Map<String, OtpEntry> otpStorage = new ConcurrentHashMap<>();
 
     /** Tokens cerrados manualmente antes de su vencimiento (token → expiración). */
@@ -77,6 +81,7 @@ public class AuthController {
 
     // ─── Paso 1: solicitar código ─────────────────────────────────────────────
 
+    // login.js manda el correo; aquí se genera el código de 4 dígitos y se envía por Brevo.
     @PostMapping("/solicitar-codigo")
     public ResponseEntity<Map<String, Object>> solicitarCodigo(
             @RequestBody Map<String, Object> datos) {
@@ -101,7 +106,10 @@ public class AuthController {
 
             Map<String, Object> r = new HashMap<>();
             r.put("success", false);
-            r.put("mensaje", "No se pudo enviar el código. Verifique la configuración de Brevo en Render.");
+            r.put("mensaje", String.valueOf(e.getMessage()).contains("unrecognised IP address")
+                    ? "Brevo está bloqueando la IP del servidor. Autorícela en "
+                            + "https://app.brevo.com/security/authorised_ips"
+                    : "No se pudo enviar el código. Verifique la configuración de Brevo.");
             r.put("errorTecnico", e.getClass().getSimpleName() + ": " + e.getMessage());
             return ResponseEntity.status(400).body(r);
         }
@@ -160,6 +168,7 @@ public class AuthController {
 
     // ─── Paso 2: verificar código → devuelve token de sesión ─────────────────
 
+    // login.js manda correo y código; si coinciden devuelve el token que guarda el navegador.
     @PostMapping("/verificar-codigo")
     public ResponseEntity<Map<String, Object>> verificarCodigo(
             @RequestBody Map<String, Object> datos) {
@@ -195,6 +204,7 @@ public class AuthController {
 
     // ─── Verificar sesión activa ──────────────────────────────────────────────
 
+    // auth-guard.js lo consulta al abrir cada página protegida para dejar pasar o mandar al login.
     @GetMapping("/verificar-sesion")
     public ResponseEntity<Map<String, Object>> verificarSesion(
             @RequestParam String token) {
@@ -215,6 +225,7 @@ public class AuthController {
 
     // ─── Cerrar sesión ────────────────────────────────────────────────────────
 
+    // Botón de salir de auth-guard.js: el token se marca como revocado hasta que venza solo.
     @PostMapping("/cerrar-sesion")
     public ResponseEntity<Map<String, Object>> cerrarSesion(
             @RequestBody Map<String, Object> datos) {

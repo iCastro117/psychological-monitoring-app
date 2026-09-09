@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+<!-- Detalle de un rescatista: sus respuestas, métricas y predicción de riesgo. -->
+<!-- Todo el movimiento lo hace js/perfil.js, que toma el id del rescatista de la URL. -->
+<!-- Página privada: auth-guard.js exige sesión. -->
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -12,6 +15,7 @@
 <div class="min-h-screen flex flex-col">
 
   <!-- Header -->
+  <!-- Encabezado con el botón Volver y el logo. -->
   <header style="background:linear-gradient(to right,#084E86,#0a65ab);" class="text-white shadow-xl">
     <div class="max-w-5xl mx-auto px-4 py-5 flex items-center gap-3">
       <button onclick="history.back()"
@@ -31,6 +35,7 @@
     </div>
   </header>
 
+  <!-- Pantallas de espera y de fallo. perfil.js muestra una u otra según lo que reciba. -->
   <!-- Cargando -->
   <div id="cargando" class="flex-1 flex items-center justify-center">
     <div class="text-center text-gray-400">
@@ -52,9 +57,11 @@
   </div>
 
   <!-- Contenido del perfil -->
+  <!-- Queda oculto hasta que perfil.js trae los datos y los reparte en las tarjetas de abajo. -->
   <main id="contenidoPerfil" class="hidden flex-1 max-w-5xl mx-auto w-full px-4 py-6 space-y-5">
 
     <!-- Tarjeta de identificación -->
+    <!-- Nombre, cédula, fecha y el badge de nivel de riesgo. -->
     <div class="bg-white rounded-xl shadow-lg p-5 flex flex-col sm:flex-row items-start sm:items-center gap-5">
       <div class="flex-1">
         <h2 id="perfilNombre" class="text-xl font-bold text-gray-800"></h2>
@@ -65,6 +72,7 @@
     </div>
 
     <!-- PREDICCIÓN DE RIESGO -->
+    <!-- Título, texto y colores de la tarjeta los pone perfil.js según el puntaje. -->
     <div id="prediccionCard" class="rounded-2xl p-6 text-center shadow-lg border-2 transition">
       <p class="text-xs font-semibold uppercase tracking-widest mb-2 opacity-70">Predicción psicológica</p>
       <h3 id="prediccionTitulo" class="text-2xl sm:text-3xl font-black mb-2"></h3>
@@ -72,6 +80,7 @@
     </div>
 
     <!-- Métricas rápidas -->
+    <!-- Cuatro cifras resumen del registro, calculadas en perfil.js. -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
       <div class="bg-white rounded-xl p-4 shadow-lg text-center">
         <p class="text-2xl font-bold text-gray-800" id="metricaPuntaje">—</p>
@@ -92,6 +101,7 @@
     </div>
 
     <!-- Gráfica de barras -->
+    <!-- Respuesta de cada pregunta. perfil.js dibuja #respuestasChart con Chart.js. -->
     <div class="bg-white rounded-xl shadow-lg p-5">
       <h3 class="font-bold text-gray-800 mb-4">Respuestas por pregunta (escala 1–5)</h3>
       <div class="relative" style="height:260px">
@@ -100,12 +110,14 @@
     </div>
 
     <!-- Análisis por dimensiones -->
+    <!-- Promedio por grupo de preguntas. perfil.js llena #categoriasContainer. -->
     <div class="bg-white rounded-xl shadow-lg p-5">
       <h3 class="font-bold text-gray-800 mb-4">Análisis por dimensión</h3>
       <div id="categoriasContainer" class="space-y-3"></div>
     </div>
 
     <!-- Respuestas detalladas -->
+    <!-- Pregunta por pregunta. perfil.js las lista en #detalleRespuestas. -->
     <div class="bg-white rounded-xl shadow-lg p-5">
       <h3 class="font-bold text-gray-800 mb-4">Detalle de respuestas</h3>
       <div id="detalleRespuestas" class="space-y-2"></div>
@@ -121,6 +133,7 @@
 
   </main>
 
+  <!-- Pie de página. -->
   <footer class="bg-gray-900 text-gray-400 py-4 text-center text-xs">
     © 2026 Sistema de Monitoreo Psicológico USAR COL-13 | Confidencial
   </footer>

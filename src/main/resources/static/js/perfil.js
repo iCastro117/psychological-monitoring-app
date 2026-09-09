@@ -1,3 +1,8 @@
+// Detalle de un rescatista en perfil.html: toma el id de la encuesta de la URL (?id=),
+// lo pide a GET /api/encuestas/{id} y con eso arma la ficha, las métricas, la gráfica de
+// barras, las dimensiones y el listado de las 23 respuestas. Se llega aquí desde el botón VER del dashboard.
+
+// Las mismas 23 preguntas de app.js y en el mismo orden. Aquí solo sirven para mostrar el texto de cada respuesta.
 const preguntas = [
     "Después de la última emergencia atendida me he sentido emocionalmente agotado.",
     "He tenido pensamientos recurrentes sobre la emergencia que atendí recientemente.",
@@ -24,9 +29,11 @@ const preguntas = [
     "Estaría dispuesto a registrar mi estado emocional en un software antes y después de cada emergencia."
 ];
 
+// El texto de cada valor. La posición 0 va vacía para que el índice coincida con la respuesta (1 a 5).
 const ESCALA = ['', 'Nunca', 'Rara vez', 'A veces', 'Frecuentemente', 'Siempre'];
 
 // Dimensiones de evaluación (grupos de preguntas)
+// De cada grupo se saca el promedio y sale una barra en el panel de dimensiones.
 const DIMENSIONES = [
     { nombre: 'Agotamiento emocional',     preguntas: [1, 5, 8],      icono: '😔' },
     { nombre: 'Intrusión / Trauma',         preguntas: [2, 3, 19, 20], icono: '🧠' },
@@ -36,6 +43,7 @@ const DIMENSIONES = [
     { nombre: 'Apoyo y percepción social',  preguntas: [9, 15, 17, 22],icono: '🤝' },
 ];
 
+// Colores y textos del recuadro de resultado según el nivel de riesgo que calculó el backend.
 const RIESGO_CONFIG = {
     1: { color: '#16a34a', bgClass: 'bg-green-50',   border: 'border-green-400',  texto: 'text-green-800',  badge: 'bg-green-100 text-green-800', titulo: 'SIN RIESGO PSICOLÓGICO SIGNIFICATIVO', desc: 'El estado emocional del rescatista se encuentra dentro de los parámetros normales. Puede continuar con sus operaciones.' },
     2: { color: '#2563eb', bgClass: 'bg-blue-50',    border: 'border-blue-400',   texto: 'text-blue-800',   badge: 'bg-blue-100 text-blue-800',   titulo: 'RIESGO PSICOLÓGICO BAJO',               desc: 'Se detectan indicadores leves. Se recomienda seguimiento de rutina y actividades de bienestar.' },
@@ -68,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // ─── Renderizado principal ────────────────────────────────────────────────────
 
+// Recibe la encuesta del backend y llena de una vez todas las secciones de la página.
 function renderizarPerfil(e) {
     document.getElementById('cargando').classList.add('hidden');
     document.getElementById('contenidoPerfil').classList.remove('hidden');
@@ -98,12 +107,14 @@ function renderizarPerfil(e) {
     document.getElementById('prediccionDescripcion').className   = `text-sm sm:text-base max-w-lg mx-auto ${cfg.texto} opacity-90`;
 
     // Obtener array de respuestas (índice 0-22)
+    // El backend las manda sueltas como respuesta1...respuesta23; aquí se juntan en una sola lista.
     const respuestas = [];
     for (let i = 1; i <= 23; i++) {
         respuestas.push(e[`respuesta${i}`] || 0);
     }
 
     // Métricas rápidas
+    // Las preguntas 1, 2, 3, 8 y 13 son las de mayor alerta: su suma es el puntaje crítico de la tarjeta.
     const criticas  = [respuestas[0], respuestas[1], respuestas[2], respuestas[7], respuestas[12]];
     const puntajeCr = criticas.reduce((a, b) => a + b, 0);
     const promedio  = (respuestas.reduce((a, b) => a + b, 0) / respuestas.length).toFixed(1);

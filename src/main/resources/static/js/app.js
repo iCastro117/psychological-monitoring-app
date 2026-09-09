@@ -1,3 +1,7 @@
+// Maneja el formulario de index.html: pinta las 23 preguntas, valida los datos
+// y manda todo a POST /api/enviar-encuesta.
+
+// Las 23 preguntas que se pintan en pantalla. El orden importa: es el mismo con el que se guardan.
 const preguntas = [
     "Después de la última emergencia atendida me he sentido emocionalmente agotado.",
     "He tenido pensamientos recurrentes sobre la emergencia que atendí recientemente.",
@@ -24,6 +28,7 @@ const preguntas = [
     "Estaría dispuesto a registrar mi estado emocional en un software antes y después de cada emergencia."
 ];
 
+// Las 5 opciones de cada pregunta: el valor es lo que se envía, la etiqueta lo que se ve.
 const escala = [
     { valor: 1, etiqueta: "Nunca" },
     { valor: 2, etiqueta: "Rara vez" },
@@ -32,7 +37,9 @@ const escala = [
     { valor: 5, etiqueta: "Siempre" }
 ];
 
+// Lo que va marcando el usuario, como {número de pregunta: valor}. De aquí sale lo que se envía.
 let respuestasSeleccionadas = {};
+// Banderas de la cédula: si ya está registrada y el temporizador que espera antes de avisar del error.
 let cedulaDuplicada = false;
 let cedulaTimer     = null;
 
@@ -46,6 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // ─── Genera las 23 preguntas ─────────────────────────────────────────────────
 
+// Arma el bloque de cada pregunta con sus 5 tarjetas y engancha el radio que guarda la respuesta.
 function generarPreguntas() {
     const container = document.getElementById('preguntasContainer');
     container.innerHTML = '';
@@ -94,6 +102,7 @@ function generarPreguntas() {
     });
 }
 
+// Resalta la tarjeta elegida de una pregunta y opaca las otras cuatro.
 function marcarSeleccionada(num, valor) {
     for (let v = 1; v <= 5; v++) {
         const card = document.getElementById(`r${num}_${v}`);
@@ -111,6 +120,10 @@ function marcarSeleccionada(num, valor) {
     if (selected) {
         selected.classList.remove('opacidad');
         selected.classList.add('seleccionada');
+        // El color va en estilo en línea, que le gana al CSS: hay que ponerlo aquí
+        // o el número queda azul oscuro sobre fondo azul oscuro.
+        const vnSel = selected.querySelector('.val-num');
+        if (vnSel) vnSel.style.color = '#fff';
     }
 }
 
@@ -125,6 +138,7 @@ function actualizarProgreso() {
 
 // ─── Validación inline de cédula ─────────────────────────────────────────────
 
+// Avisa de los errores de cédula: mientras escribe espera 2 segundos, y al salir del campo consulta al backend.
 function configurarValidacionCedula() {
     const inputCedula = document.getElementById('cedula');
 
@@ -153,6 +167,7 @@ function configurarValidacionCedula() {
     });
 }
 
+// Pregunta a GET /api/cedula-existe/{cedula} si ya está registrada; si lo está, bloquea el envío.
 function verificarCedulaDuplicada(cedula) {
     const indicador = document.getElementById('cedulaIndicador');
     indicador.textContent = '🔍 Verificando...';
@@ -198,6 +213,7 @@ function limpiarErrorCedulaInline() {
 
 // ─── Eventos ─────────────────────────────────────────────────────────────────
 
+// Botones de los tres modales: confirmar el envío, cerrar el error y dejar todo limpio para una nueva encuesta.
 function configurarEventos() {
     const modalConf  = document.getElementById('modalConfirmacion');
     const modalExito = document.getElementById('modalExito');
@@ -234,6 +250,7 @@ function configurarEventos() {
 
 // ─── Validación ───────────────────────────────────────────────────────────────
 
+// Revisa nombre, cédula y que estén las 23 respuestas antes de abrir el modal de confirmación.
 function validarFormulario() {
     const nombre = document.getElementById('nombreCompleto').value.trim();
     const cedula = document.getElementById('cedula').value.trim();
@@ -252,6 +269,7 @@ function validarFormulario() {
 
 // ─── Envío al backend ────────────────────────────────────────────────────────
 
+// Arma el envío con el nombre, la cédula y las 23 respuestas, y lo manda a POST /api/enviar-encuesta.
 function enviarEncuesta() {
     const btnConfirmar = document.getElementById('btnConfirmar');
     const modalConf    = document.getElementById('modalConfirmacion');
@@ -259,6 +277,7 @@ function enviarEncuesta() {
     btnConfirmar.disabled    = true;
     btnConfirmar.textContent = '⏳ Enviando...';
 
+    // Van como lista en orden de la 1 a la 23, que es como las espera el backend.
     const respuestas = [];
     for (let i = 1; i <= preguntas.length; i++) {
         respuestas.push(respuestasSeleccionadas[i] || 0);

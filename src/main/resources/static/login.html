@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<!-- Ingreso al dashboard en dos pasos: primero el correo, después el código de 4 dígitos. -->
+<!-- Todo el movimiento lo hace js/login.js: pide el código, lo verifica y guarda la sesión. -->
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -12,6 +14,7 @@
   <div class="max-w-sm w-full">
 
     <!-- Logo / encabezado -->
+    <!-- Logo y títulos de la pantalla. -->
     <div class="text-center mb-6">
       <div class="h-16 w-16 rounded-full bg-white flex items-center justify-center mx-auto border-2 border-green-300 overflow-hidden shadow-sm">
         <img src="/img/logo.png" alt="Logo USAR COL-13"
@@ -26,6 +29,7 @@
     <div class="bg-white rounded-2xl shadow-md p-6">
 
       <!-- ═══════ PASO 1: EMAIL ═══════ -->
+      <!-- login.js valida el correo, pide el código y avisa los fallos en #emailError. -->
       <div id="pasoEmail">
         <label class="block text-sm font-semibold text-gray-800 mb-1">Correo institucional</label>
         <input type="email" id="emailInput"
@@ -43,6 +47,7 @@
       </div>
 
       <!-- ═══════ PASO 2: CÓDIGO (oculto hasta validar email) ═══════ -->
+      <!-- login.js verifica el código y, si sirve, lleva al dashboard. -->
       <div id="pasoCodigo" class="hidden">
         <div class="flex items-center justify-between mb-1">
           <label class="block text-sm font-semibold text-gray-800">Código de verificación</label>

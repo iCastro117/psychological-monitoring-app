@@ -2,6 +2,8 @@ package com.usar.monitoreo.entity;
 
 import jakarta.persistence.*;
 
+// La persona que responde: nombre, cédula y cuándo se registró. Una fila por rescatista.
+// EncuestaService la crea al llegar el formulario y cada Encuesta apunta a ella.
 @Entity
 @Table(name = "rescatistas")
 public class Rescatista {

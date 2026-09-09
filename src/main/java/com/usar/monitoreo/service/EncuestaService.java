@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+// Aquí está lo que se hace con las encuestas: guardarlas, calcular el nivel de riesgo
+// y buscar o crear al rescatista por cédula. Lo llama WebController y es el que habla
+// con los repositorios.
 @Service
 public class EncuestaService {
 
@@ -19,6 +22,7 @@ public class EncuestaService {
     @Autowired
     private RescatistaRepository rescatistaRepository;
 
+    // Recibe las 23 respuestas que llegaron del formulario, les calcula el riesgo y las guarda.
     public Encuesta guardarEncuesta(Rescatista rescatista, int[] respuestas) {
         Encuesta encuesta = new Encuesta();
         encuesta.setRescatista(rescatista);
@@ -37,6 +41,7 @@ public class EncuestaService {
      * 3 (dificultades para dormir), 8 (impacto emocional), 13 (irritabilidad)
      * Retorna: 1=Mínimo, 2=Bajo, 3=Medio, 4=Alto, 5=Crítico
      */
+    // El número que sale de aquí es el que dashboard.js usa para el color del semáforo.
     public int calcularNivelRiesgo(int[] respuestas) {
         int[] preguntasCriticas = {0, 1, 2, 7, 12}; // índices 0-based: P1, P2, P3, P8, P13
         int suma = 0;
@@ -79,6 +84,7 @@ public class EncuestaService {
         return Optional.of(rescatistaRepository.save(nuevo));
     }
 
+    // El color y la etiqueta los arma dashboard.js por su cuenta; estos dos quedaron sin usar.
     public String obtenerColorRiesgo(Integer nivel) {
         if (nivel == null) return "gray";
         switch (nivel) {
