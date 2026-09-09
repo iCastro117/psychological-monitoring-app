@@ -11,8 +11,10 @@
     document.documentElement.style.visibility = 'hidden';
 
     const token = localStorage.getItem('authToken');
+    const expira = Number(localStorage.getItem('authExpira')) || 0;
 
-    if (!token) {
+    if (!token || Date.now() > expira) {
+        cerrarSesionLocal();
         window.location.replace('/login');
         return;
     }
@@ -23,17 +25,24 @@
             if (data.valido) {
                 document.documentElement.style.visibility = 'visible';
                 window.__authEmail = data.email;
+                if (data.expiraEn) localStorage.setItem('authExpira', data.expiraEn);
             } else {
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('authEmail');
+                cerrarSesionLocal();
                 window.location.replace('/login');
             }
         })
         .catch(() => {
-            // Si falla la verificación por red, por seguridad redirige a login
-            window.location.replace('/login');
+            // El servidor no respondió (arranque en frío de Render, red intermitente).
+            // El token aún no vence, así que se mantiene la sesión en lugar de expulsar.
+            document.documentElement.style.visibility = 'visible';
         });
 })();
+
+function cerrarSesionLocal() {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('authEmail');
+    localStorage.removeItem('authExpira');
+}
 
 /** Función global de cierre de sesión — usable desde cualquier botón "Salir" */
 function cerrarSesion() {
@@ -43,8 +52,7 @@ function cerrarSesion() {
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ token })
     }).finally(() => {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('authEmail');
+        cerrarSesionLocal();
         window.location.href = '/login';
     });
 }

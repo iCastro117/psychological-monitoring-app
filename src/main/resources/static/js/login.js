@@ -102,6 +102,7 @@ function verificarCodigo() {
         if (data.success) {
             localStorage.setItem('authToken', data.token);
             localStorage.setItem('authEmail', data.email);
+            localStorage.setItem('authExpira', data.expiraEn);
             window.location.href = '/dashboard';
         } else {
             mostrarError('codigoError', data.mensaje || 'Código incorrecto.');

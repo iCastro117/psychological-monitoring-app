@@ -14,6 +14,10 @@ services:
         scope: runtime
       - key: SPRING_JPA_HIBERNATE_DDL_AUTO
         value: update
+      # Clave de firma de los tokens de sesión (2 horas). Render la genera una
+      # sola vez y la mantiene entre reinicios, para que no se cierre la sesión.
+      - key: SESSION_SECRET
+        generateValue: true
 
 databases:
   - name: psycological-monitoring-db
